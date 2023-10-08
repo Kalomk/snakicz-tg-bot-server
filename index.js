@@ -54,7 +54,7 @@ function confrimOrder({ chatId, userId, text, messageId, keyboards }) {
       inline_keyboard: [
         [
           {
-            text: 'ПриватБанк (курс 8.5)',
+            text: 'ПриватБанк (курс 8.6)',
             callback_data: JSON.stringify({ confirm: 'privat', chat_id: chatId }),
           },
         ],
@@ -62,12 +62,6 @@ function confrimOrder({ chatId, userId, text, messageId, keyboards }) {
           {
             text: 'Переказ на польський рахунок',
             callback_data: JSON.stringify({ confirm: 'polish_bank', chat_id: chatId }),
-          },
-        ],
-        [
-          {
-            text: 'Переказ BLIK за номером телефону',
-            callback_data: JSON.stringify({ confirm: 'blik', chat_id: chatId }),
           },
         ],
       ],
@@ -93,11 +87,9 @@ function sendPaymentMessage(chatid, type) {
   function checkType() {
     switch (type) {
       case 'privat':
-        return 'Ви обрали оплату через Приват банк. Ось номер рахунку для переведення';
+        return 'Номер картки: 5363542019838953\nПІБ отримувача: Демементьєва Анастасія\nКурс: 8.6\nСума: сума в злотих помножена на 8.6';
       case 'polish_bank':
-        return 'Ви обрали спосіб оплати через переведення на польский рахунок. Ось номер рахунку для переведення';
-      case 'blik':
-        return 'Ви обрали спосіб оплати через Blik. Ось номер телефону, за яким ви можете перевести гроші';
+        return 'Номер рахунку:\n51 1600 1462 1810 5934 7000 0001\nПІБ отримувача: Kliuchnyk Denys\nБанк отримувача: PNB Paribas';
     }
   }
 
@@ -260,18 +252,14 @@ function handleStartCommand(msg) {
     // Combine chatId and the random number to create the order number
     orderNumber = `${chatId}${randomPart}`;
 
-    const storeKeyboard = [
-      [{ text: 'Магазин', web_app: { url: webAppUrl } }],
-      [{ text: "Зв'язатись з нами" }],
-    ];
-    const thankYouMessage =
-      "Дякуємо за контакти. Для продовження натисніть 'Магазин' або 'Зв'язатись з нами'.";
+    const storeKeyboard = [[{ text: 'Магазин', web_app: { url: webAppUrl } }]];
+    const thankYouMessage = "Дякуємо за контакти. Для продовження натисніть 'Магазин'";
     sendKeyboardMessage(chatId, thankYouMessage, storeKeyboard);
   }
 
   function webDataHandler(msg) {
     if (msg.web_app_data?.data) {
-      sendKeyboardMessage(chatId, 'Дані відправлено', inlineKeyboard);
+      sendKeyboardMessage(chatId, 'Замовлення відправлено', inlineKeyboard);
 
       try {
         const dataFromResponse = JSON.parse(msg.web_app_data.data);
@@ -306,8 +294,7 @@ function handleStartCommand(msg) {
 
         async function sendMessages() {
           const messagesToSend = [
-            "Дякую за зворотній зв'язок",
-            `Ваша вулиця: ${data?.userAddress || data?.addressPack}`,
+            `Ваша адреса: ${data?.userAddress || data?.addressPack}`,
             `Cума замовлення: ${totalPrice} zł`,
             `Вага замовлення: ${totalWeight} грам`,
           ];
@@ -319,7 +306,7 @@ function handleStartCommand(msg) {
           setTimeout(async () => {
             await bot.sendMessage(
               chatId,
-              'Дякуємо за замовлення ❤️\nБудь ласка, очікуйте підтвердження і реквізити на оплату\nЯкщо у вас виникли питання - Ви можете звернутись до нашого менеджера у телеграм (лінк) або інстаграм (лінк)'
+              'Дякуємо за замовлення ❤️\nБудь ласка, очікуйте підтвердження і реквізити на оплату\nЯкщо у вас виникли питання - Ви можете звернутись до нашого менеджера у телеграм [телеграм](https://t.me/snakicz_manager) або [інстаграм](https://www.instagram.com/snakicz/)'
             );
           }, 2000);
         }
@@ -335,10 +322,6 @@ function handleStartCommand(msg) {
 
   function messageHandlerFromText(msg) {
     if (msg.text === 'Почати знову' || msg.text === 'Вийти') {
-      handleStartCommand(msg);
-    }
-    if (msg.text === "Зв'язатись з нами") {
-      bot.sendMessage(msg.chat.id, 'https://t.me/snakicz_manager');
       handleStartCommand(msg);
     }
   }
@@ -375,9 +358,6 @@ function handleStartCommand(msg) {
         sendPaymentMessage(chatId, action.confirm);
         break;
       case 'polish_bank':
-        sendPaymentMessage(chatId, action.confirm);
-        break;
-      case 'blik':
         sendPaymentMessage(chatId, action.confirm);
         break;
       case 'pay-confirm':
