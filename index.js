@@ -107,8 +107,8 @@ function sendPaymentMessage(chatId, type) {
   });
 }
 
-function sendPhotoScreenShot(chatId) {
-  bot.sendMessage(chatId, 'Вишліть фотопідтвердження оплати,прикріпивши фото знизу 👇');
+function sendPhotoScreenShot(chat_id) {
+  bot.sendMessage(chat_id, 'Вишліть фотопідтвердження оплати,прикріпивши фото знизу 👇');
   // Listen for messages from the user
   bot.once('message', async (msg) => {
     const chatId = msg.chat.id;
@@ -121,7 +121,7 @@ function sendPhotoScreenShot(chatId) {
       try {
         // Send the photo to the group chat
         await bot.sendPhoto(group_chat_for_payment, photo.file_id);
-        bot.sendMessage(group_chat_for_payment, `Скрін підтвердження №${orderNumber[chatId]}`);
+        bot.sendMessage(group_chat_for_payment, `Скрін підтвердження №${orderNumber[chat_id]}`);
         bot.sendMessage(chatId, 'Фото підтвердження оплати відправлено 😍\nЧекайте на відправку');
       } catch (error) {
         console.error('Error sending photo:', error);
