@@ -37,6 +37,12 @@ function sendKeyboardMessage(chatId, text, keyboard) {
   bot.sendMessage(chatId, text, options);
 }
 
+function messageHandlerFromText(msg) {
+  if (msg.text === 'Почати знову' || msg.text === 'Вийти') {
+    handleStartCommand(msg);
+  }
+}
+
 function confrimOrder({ chatId, userId, text, messageId, keyboards }) {
   // Create a new array with the first element replaced
   const updatedKeyboards = keyboards.slice(); // Create a copy of the original array
@@ -110,7 +116,7 @@ function sendPaymentMessage(chatId, type) {
 function sendPhotoScreenShot(chat_id) {
   bot.sendMessage(chat_id, 'Вишліть фотопідтвердження оплати,прикріпивши фото знизу 👇');
   // Listen for messages from the user
-  bot.once('message', async (msg) => {
+  bot.once('photo', async (msg) => {
     const chatId = msg.chat.id;
 
     if (msg.photo && msg.photo.length > 0) {
@@ -120,9 +126,11 @@ function sendPhotoScreenShot(chat_id) {
 
       try {
         // Send the photo to the group chat
+
         await bot.sendPhoto(group_chat_for_payment, photo.file_id);
-        bot.sendMessage(group_chat_for_payment, `Скрін підтвердження №${orderNumber[chat_id]}`);
+        bot.sendMessage(group_chat_for_payment, `Скрін підтвердження №${orderNumber[chatId]}`);
         bot.sendMessage(chatId, 'Фото підтвердження оплати відправлено 😍\nЧекайте на відправку');
+        delete orderNumber[chatId];
       } catch (error) {
         console.error('Error sending photo:', error);
         bot.sendMessage(chatId, 'Під час відправлення фото сталася помилка 😳\nСпробуйте знову');
@@ -316,16 +324,9 @@ function handleStartCommand(msg) {
         sendProducts();
 
         delete userPhoneNumber[chatId];
-        delete orderNumber[chatId];
       } catch (e) {
         console.error('Error parsing data:', e);
       }
-    }
-  }
-
-  function messageHandlerFromText(msg) {
-    if (msg.text === 'Почати знову' || msg.text === 'Вийти') {
-      handleStartCommand(msg);
     }
   }
 
