@@ -11,8 +11,8 @@ const group_chat = process.env.GROUP_CHAT;
 const group_chat_for_payment = process.env.GROUP_CHAT_FOR_PAYMENT;
 const webAppUrl = process.env.WEB_URL;
 
-let orderNumber;
-let userPhoneNumber = '';
+let orderNumber = {};
+let userPhoneNumber = {};
 
 // Create Express app
 const app = express();
@@ -196,39 +196,8 @@ function sendOrderConfirmation({ chatId, userId, text, messageId, keyboards, ord
 }
 
 // Function to handle the /start command
-function handleStartCommand(msg) {
+function handleStartCommand() {
   bot.removeAllListeners();
-
-  const chatId = msg.chat.id;
-  const user = msg.chat.username;
-
-  // Generate a random number between 1000 and 9999
-  const randomPart = Math.floor(Math.random() * 9000) + 1000;
-
-  const option = {
-    reply_markup: {
-      inline_keyboard: [
-        [
-          {
-            text: 'Надіслати підтверждення',
-            callback_data: JSON.stringify({ confirm: 'confirm', chat_id: chatId }),
-          },
-        ],
-        [
-          {
-            text: 'Підтвердити оплату',
-            callback_data: JSON.stringify({ confirm: 'pay-confirm', chat_id: chatId }),
-          },
-        ],
-        [
-          {
-            text: 'Вислати номер пачки',
-            callback_data: JSON.stringify({ confirm: 'send-pack-number', chat_id: chatId }),
-          },
-        ],
-      ],
-    },
-  };
 
   const inlineKeyboard = [
     [
@@ -246,11 +215,12 @@ function handleStartCommand(msg) {
 
   function contactHandler(msg) {
     const chatId = msg.chat.id;
-    console.log(msg.contact.phone_number);
+    // Generate a random number between 1000 and 9999
+    const randomPart = Math.floor(Math.random() * 9000) + 1000;
 
-    userPhoneNumber = msg.contact.phone_number;
+    userPhoneNumber[chatId] = msg.contact.phone_number;
     // Combine chatId and the random number to create the order number
-    orderNumber = `${chatId}${randomPart}`;
+    orderNumber[chatId] = `${chatId}${randomPart}`;
 
     const storeKeyboard = [[{ text: 'Магазин', web_app: { url: webAppUrl } }]];
     const thankYouMessage = "Дякуємо за контакти. Для продовження натисніть 'Магазин'";
@@ -259,6 +229,34 @@ function handleStartCommand(msg) {
 
   function webDataHandler(msg) {
     if (msg.web_app_data?.data) {
+      const chatId = msg.chat.id;
+      const user = msg.chat.username;
+
+      const option = {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: 'Надіслати підтверждення',
+                callback_data: JSON.stringify({ confirm: 'confirm', chat_id: chatId }),
+              },
+            ],
+            [
+              {
+                text: 'Підтвердити оплату',
+                callback_data: JSON.stringify({ confirm: 'pay-confirm', chat_id: chatId }),
+              },
+            ],
+            [
+              {
+                text: 'Вислати номер пачки',
+                callback_data: JSON.stringify({ confirm: 'send-pack-number', chat_id: chatId }),
+              },
+            ],
+          ],
+        },
+      };
+
       sendKeyboardMessage(chatId, 'Замовлення відправлено', inlineKeyboard);
 
       try {
@@ -278,11 +276,11 @@ function handleStartCommand(msg) {
         Адреса-покупця: ${data?.userAddress || 'нема'},
         Нік: @${user},
         Є котик: ${isCatExist ? 'Є котик' : 'Нема котика'} 
-        Номер замовлення: ${orderNumber}
+        Номер замовлення: ${orderNumber[chatId]}
         Безкоштовна доставка: ${freeDelivery ? 'Є безкоштовна доставка' : 'Нема'}
         Cума замовлення: ${totalPrice},
         Номер телефону для відправки: ${data?.phoneNumber},
-        Номер телефону для контакту: ${userPhoneNumber}
+        Номер телефону для контакту: ${userPhoneNumber[chatId]}
         Емейл: ${data?.email},
         Вага замовлення: ${totalWeight},
         Позиції: \n\n${products
@@ -322,7 +320,7 @@ function handleStartCommand(msg) {
 
   function messageHandlerFromText(msg) {
     if (msg.text === 'Почати знову' || msg.text === 'Вийти') {
-      handleStartCommand(msg);
+      handleStartCommand();
     }
   }
 
