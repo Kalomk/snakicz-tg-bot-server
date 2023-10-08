@@ -98,7 +98,7 @@ function sendPaymentMessage(chatId, type) {
       inline_keyboard: [
         [
           {
-            text: 'Надіслати підтвердження',
+            text: 'Надіслати cкрін-підтвердження',
             callback_data: JSON.stringify({ confirm: 'sendPhoto', chat_id: chatId }),
           },
         ],
