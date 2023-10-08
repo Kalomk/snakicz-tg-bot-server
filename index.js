@@ -110,7 +110,7 @@ function sendPaymentMessage(chatid, type) {
           try {
             // Send the photo to the group chat
             await bot.sendPhoto(group_chat_for_payment, photo.file_id);
-            bot.sendMessage(group_chat_for_payment, `Скрін підтвердження №${orderNumber}`);
+            bot.sendMessage(group_chat_for_payment, `Скрін підтвердження №${orderNumber[chatId]}`);
             bot.sendMessage(
               chatId,
               'Фото підтвердження оплати відправлено 😍\nЧекайте на відправку'
