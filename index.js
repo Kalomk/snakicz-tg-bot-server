@@ -339,6 +339,7 @@ function handleStartCommand(msg) {
     }
     if (msg.text === "Зв'язатись з нами") {
       bot.sendMessage(msg.chat.id, 'https://t.me/snakicz_manager');
+      handleStartCommand(msg);
     }
   }
 
