@@ -311,7 +311,9 @@ function handleStartCommand() {
 
         sendMessages();
         sendProducts();
-        console.log(data);
+
+        delete userPhoneNumber[chatId];
+        delete orderNumber[chatId];
       } catch (e) {
         console.error('Error parsing data:', e);
       }
