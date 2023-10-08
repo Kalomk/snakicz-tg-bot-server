@@ -306,7 +306,7 @@ function handleStartCommand(msg) {
           setTimeout(async () => {
             await bot.sendMessage(
               chatId,
-              'Дякуємо за замовлення ❤️\nБудь ласка, очікуйте підтвердження і реквізити на оплату\nЯкщо у вас виникли питання - Ви можете звернутись до нашого менеджера у телеграм [телеграм](https://t.me/snakicz_manager) або [інстаграм](https://www.instagram.com/snakicz/)'
+              'Дякуємо за замовлення ❤️\nБудь ласка, очікуйте підтвердження і реквізити на оплату\nЯкщо у вас виникли питання - Ви можете звернутись до нашого менеджера у телеграм (https://t.me/snakicz_manager) або (https://www.instagram.com/snakicz/)'
             );
           }, 2000);
         }
