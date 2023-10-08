@@ -23,8 +23,8 @@ app.use(cors());
 
 // Create Telegram Bot
 const bot = new TelegramBot(_token, { polling: true });
-
 bot.on('polling_error', console.log);
+
 // Helper function to send a message with a keyboard
 function sendKeyboardMessage(chatId, text, keyboard) {
   const options = {
@@ -196,8 +196,10 @@ function sendOrderConfirmation({ chatId, userId, text, messageId, keyboards, ord
 }
 
 // Function to handle the /start command
-function handleStartCommand() {
+function handleStartCommand(msg) {
   bot.removeAllListeners();
+
+  const chatId = msg.chat.id;
 
   const inlineKeyboard = [
     [
@@ -322,7 +324,7 @@ function handleStartCommand() {
 
   function messageHandlerFromText(msg) {
     if (msg.text === 'Почати знову' || msg.text === 'Вийти') {
-      handleStartCommand();
+      handleStartCommand(msg);
     }
   }
 
