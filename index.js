@@ -285,6 +285,8 @@ function handleStartCommand(msg) {
         Ім'я та Прізвище: ${data?.userName} ${data?.userLastName}
         Адреса-Пачкомату: ${data?.addressPack || 'нема'},
         Адреса-покупця: ${data?.userAddress || 'нема'},
+        Місто: ${data?.userCity},
+        Індекс: ${data?.userIndexCity}
         Нік: @${user},
         Є котик: ${isCatExist ? 'Є котик' : 'Нема котика'} 
         Номер замовлення: ${orderNumber[chatId]}
