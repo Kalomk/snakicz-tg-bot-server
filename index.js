@@ -122,7 +122,7 @@ function sendPhotoScreenShot(chat_id) {
     if (msg.photo && msg.photo.length > 0) {
       // The `msg.photo` property is an array of photo sizes
       // You can access different sizes using indexes (0 - smallest, 2 - largest)
-      const photo = msg.photo[2]; // Use the largest available photo
+      const photo = msg.photo[msg.photo.length - 1]; // Use the largest available photo
 
       try {
         // Send the photo to the group chat
