@@ -198,6 +198,7 @@ function sendOrderConfirmation({ chatId, userId, text, messageId, keyboards, ord
           inline_keyboard: inlineKeyboard,
         },
       });
+      console.log('done confirmation');
     } catch (err) {
       console.log(err);
     }
@@ -336,8 +337,6 @@ function handleStartCommand(msg) {
 
   bot.on('web_app_data', webDataHandler);
 
-  bot.on('message', messageHandlerFromText);
-
   bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     const action = JSON.parse(callbackQuery.data);
     const text = callbackQuery.message.text;
@@ -394,6 +393,14 @@ bot.onText(/\/echo (.+)/, (msg, match) => {
 });
 
 bot.onText(/\/start/, (msg) => {
+  handleStartCommand(msg);
+});
+
+bot.onText(/\Почати знову/, (msg) => {
+  handleStartCommand(msg);
+});
+
+bot.onText(/\Вийти/, (msg) => {
   handleStartCommand(msg);
 });
 
