@@ -306,7 +306,7 @@ function handleStartCommand(msg) {
         async function sendMessages() {
           const messagesToSend = [
             `Ваша адреса: ${data?.userAddress || data?.addressPack}`,
-            `Cума замовлення: ${totalPrice} zł`,
+            `Cума замовлення: ${totalPrice} ${activePrice}`,
             `Вага замовлення: ${totalWeight} грам`,
           ];
 
