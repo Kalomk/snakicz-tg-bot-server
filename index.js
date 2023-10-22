@@ -229,7 +229,7 @@ function handleStartCommand(msg) {
     // Combine chatId and the random number to create the order number
     orderNumber[chatId] = `${chatId}${randomPart}`;
 
-    const url = userFirstTimeClick[chatId] ? webAppUrl + '/priceSelect' : webAppUrl;
+    const url = !userFirstTimeClick[chatId] ? webAppUrl + '/priceSelect' : webAppUrl;
 
     const storeKeyboard = [[{ text: 'Магазин', web_app: { url } }]];
     const thankYouMessage = "Дякуємо за контакти. Для продовження натисніть 'Магазин'";
@@ -272,7 +272,7 @@ function handleStartCommand(msg) {
 
       try {
         const dataFromResponse = JSON.parse(msg.web_app_data.data);
-        const { data, products, totalPrice, totalWeight, freeDelivery, isCatExist } =
+        const { data, products, totalPrice, totalWeight, freeDelivery, isCatExist, activePrice } =
           dataFromResponse;
 
         // Functions to format messages
@@ -291,7 +291,7 @@ function handleStartCommand(msg) {
         Є котик: ${isCatExist ? 'Є котик' : 'Нема котика'} 
         Номер замовлення: ${orderNumber[chatId]}
         Безкоштовна доставка: ${freeDelivery ? 'Є безкоштовна доставка' : 'Нема'}
-        Cума замовлення: ${totalPrice},
+        Cума замовлення: ${totalPrice} ${activePrice},
         Номер телефону для відправки: ${data?.phoneNumber},
         Номер телефону для контакту: ${userPhoneNumber[chatId]}
         Емейл: ${data?.email},
