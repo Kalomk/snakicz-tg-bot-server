@@ -234,6 +234,8 @@ function handleStartCommand(msg) {
     const storeKeyboard = [[{ text: 'Магазин', web_app: { url } }]];
     const thankYouMessage = "Дякуємо за контакти. Для продовження натисніть 'Магазин'";
     sendKeyboardMessage(chatId, thankYouMessage, storeKeyboard);
+
+    userFirstTimeClick[chatId] = true;
   }
 
   function webDataHandler(msg) {
