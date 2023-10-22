@@ -13,6 +13,7 @@ const webAppUrl = process.env.WEB_URL;
 
 let orderNumber = {};
 let userPhoneNumber = {};
+let userFirstTimeClick = {};
 
 // Create Express app
 const app = express();
@@ -35,12 +36,6 @@ function sendKeyboardMessage(chatId, text, keyboard) {
     },
   };
   bot.sendMessage(chatId, text, options);
-}
-
-function messageHandlerFromText(msg) {
-  if (msg.text === 'Почати знову' || msg.text === 'Вийти') {
-    handleStartCommand(msg);
-  }
 }
 
 function confrimOrder({ chatId, userId, text, messageId, keyboards }) {
@@ -113,7 +108,7 @@ function sendPaymentMessage(chatId, type) {
   });
 }
 
-function sendPhotoScreenShot(chat_id) {
+function requestUserPhoto(chat_id) {
   bot.sendMessage(chat_id, 'Вишліть фотопідтвердження оплати,прикріпивши фото знизу 👇');
   // Listen for messages from the user
   bot.once('photo', async (msg) => {
@@ -134,7 +129,7 @@ function sendPhotoScreenShot(chat_id) {
       } catch (error) {
         console.error('Error sending photo:', error);
         bot.sendMessage(chatId, 'Під час відправлення фото сталася помилка 😳\nСпробуйте знову');
-        sendPhotoScreenShot(chatId);
+        requestUserPhoto(chatId);
       }
     } else {
       bot.sendMessage(chatId, 'Повідомлення не містить фото підтвердження оплати');
@@ -234,9 +229,13 @@ function handleStartCommand(msg) {
     // Combine chatId and the random number to create the order number
     orderNumber[chatId] = `${chatId}${randomPart}`;
 
-    const storeKeyboard = [[{ text: 'Магазин', web_app: { url: webAppUrl } }]];
+    const url = userFirstTimeClick[chatId] ? webAppUrl + '/priceSelect' : webAppUrl;
+
+    const storeKeyboard = [[{ text: 'Магазин', web_app: { url } }]];
     const thankYouMessage = "Дякуємо за контакти. Для продовження натисніть 'Магазин'";
     sendKeyboardMessage(chatId, thankYouMessage, storeKeyboard);
+
+    userFirstTimeClick[chatId] = true;
   }
 
   function webDataHandler(msg) {
@@ -327,6 +326,7 @@ function handleStartCommand(msg) {
         sendProducts();
 
         delete userPhoneNumber[chatId];
+        delete userFirstTimeClick[chatId];
       } catch (e) {
         console.error('Error parsing data:', e);
       }
@@ -379,7 +379,7 @@ function handleStartCommand(msg) {
         });
         break;
       case 'sendPhoto':
-        sendPhotoScreenShot(chatId);
+        requestUserPhoto(chatId);
         break;
     }
   });
@@ -411,5 +411,3 @@ bot.onText(/\/restart/, (msg) => {
 // Start the Express server
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => console.log(`Server started on PORT ${PORT}`));
-
-//dsfsdfdsfdsfds
