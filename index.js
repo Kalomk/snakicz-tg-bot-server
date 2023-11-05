@@ -272,7 +272,8 @@ function handleStartCommand(msg) {
         const dataFromResponse = JSON.parse(msg.web_app_data.data);
         const { data, products, totalPrice, totalWeight, freeDelivery, isCatExist, activePrice } =
           dataFromResponse;
-
+        const calcTotalPrice =
+          !freeDelivery && activePrice === 'zł' ? +totalPrice + 17 : totalPrice;
         // Functions to format messages
         function formatProduct(count, title, weight) {
           return `назва: ${title} вага: ${weight} кількість: ${count},\n`;
@@ -289,9 +290,7 @@ function handleStartCommand(msg) {
         Є котик: ${isCatExist ? 'Є котик' : 'Нема котика'} 
         Номер замовлення: ${orderNumber[chatId]}
         Безкоштовна доставка: ${freeDelivery ? 'Є безкоштовна доставка' : 'Нема'}
-        Cума замовлення: ${
-          !freeDelivery && activePrice === 'zł' ? +totalPrice + 17 : totalPrice
-        } ${activePrice},
+        Cума замовлення: ${calcTotalPrice} ${activePrice},
         Номер телефону для відправки: ${data?.phoneNumber},
         Номер телефону для контакту: ${userPhoneNumber[chatId]}
         Емейл: ${data?.email},
@@ -306,7 +305,7 @@ function handleStartCommand(msg) {
         async function sendMessages() {
           const messagesToSend = [
             `Ваша адреса: ${data?.userAddress || data?.addressPack}`,
-            `Cума замовлення: ${totalPrice} ${activePrice}`,
+            `Cума замовлення: ${calcTotalPrice} ${activePrice}`,
             `Вага замовлення: ${totalWeight} грам`,
           ];
 
