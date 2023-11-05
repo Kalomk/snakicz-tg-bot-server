@@ -55,7 +55,7 @@ function confrimOrder({ chatId, userId, text, messageId, keyboards }) {
       inline_keyboard: [
         [
           {
-            text: 'ПриватБанк (курс 8.6)',
+            text: 'ПриватБанк (курс 8.8)',
             callback_data: JSON.stringify({ confirm: 'privat', chat_id: chatId }),
           },
         ],
@@ -88,7 +88,7 @@ function sendPaymentMessage(chatId, type) {
   function checkType() {
     switch (type) {
       case 'privat':
-        return 'Номер картки: 5363542019838953\nПІБ отримувача: Демементьєва Анастасія\nКурс: 8.6\nСума: сума в злотих помножена на 8.6';
+        return 'Номер картки: 5363542019838953\nПІБ отримувача: Демементьєва Анастасія\nКурс: 8.8\nСума: сума в злотих помножена на 8.8';
       case 'polish_bank':
         return 'Номер рахунку:\n51 1600 1462 1810 5934 7000 0001\nПІБ отримувача: Kliuchnyk Denys\nБанк отримувача: PNB Paribas';
     }
@@ -234,8 +234,6 @@ function handleStartCommand(msg) {
     const storeKeyboard = [[{ text: 'Магазин', web_app: { url } }]];
     const thankYouMessage = "Дякуємо за контакти. Для продовження натисніть 'Магазин'";
     sendKeyboardMessage(chatId, thankYouMessage, storeKeyboard);
-
-    userFirstTimeClick[chatId] = true;
   }
 
   function webDataHandler(msg) {
@@ -326,6 +324,7 @@ function handleStartCommand(msg) {
         sendProducts();
 
         delete userPhoneNumber[chatId];
+        userFirstTimeClick[chatId] = true;
       } catch (e) {
         console.error('Error parsing data:', e);
       }
