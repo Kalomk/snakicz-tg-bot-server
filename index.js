@@ -289,7 +289,9 @@ function handleStartCommand(msg) {
         Є котик: ${isCatExist ? 'Є котик' : 'Нема котика'} 
         Номер замовлення: ${orderNumber[chatId]}
         Безкоштовна доставка: ${freeDelivery ? 'Є безкоштовна доставка' : 'Нема'}
-        Cума замовлення: ${totalPrice} ${activePrice},
+        Cума замовлення: ${
+          !freeDelivery && activePrice === 'zł' ? +totalPrice + 17 : totalPrice
+        } ${activePrice},
         Номер телефону для відправки: ${data?.phoneNumber},
         Номер телефону для контакту: ${userPhoneNumber[chatId]}
         Емейл: ${data?.email},
