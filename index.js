@@ -90,7 +90,7 @@ function sendPaymentMessage(chatId, type) {
       case 'privat':
         return 'Номер картки: 5363542019838953\nПІБ отримувача: Демементьєва Анастасія\nКурс: 8.8\nСума: сума в злотих помножена на 8.8';
       case 'polish_bank':
-        return 'Номер рахунку:\n51 1600 1462 1810 5934 7000 0001\nПІБ отримувача: Kliuchnyk Denys\nБанк отримувача: PNB Paribas';
+        return 'Номер рахунку:\n24 1600 1462 1731 7466 5000 0001\nПІБ отримувача: Dementieva Anastasiia\nБанк отримувача: PNB Paribas';
     }
   }
 
