@@ -449,10 +449,10 @@ function handleStartCommand(msg) {
         actualizeInfo(chatId, userId);
         break;
       case 'accept':
-        userAcceptOrder(chatId, messageId);
+        userAcceptOrder(userId, messageId);
         break;
       case 'decline':
-        userDeclineOreder(chatId, userId, messageId);
+        userDeclineOreder(userId, chatId, messageId);
         break;
     }
   });
