@@ -161,27 +161,24 @@ function paymentConfirm({ chatId, userId, text, messageId, keyboards }) {
   bot.sendMessage(userId, 'Вашу оплату підтверджено✅\nБудь ласка, очікуйте номер відправлення 📦');
 }
 
-function userDeclineOreder(chatId, userId, messageId) {
-  bot.editMessageText('Замовлення відхилено!!!', {
+function userDeclineOreder(chatId, userId, messageId, orderNumberFromText) {
+  bot.editMessageText('Ваше замовлення було аннульоване!', {
     chat_id: chatId,
     message_id: messageId,
   });
-  const inlineKeyboard = [
-    [
-      {
-        text: 'Почати знову',
-      },
-    ],
-  ];
 
-  sendKeyboardMessage(userId, 'Ваше замовлення було аннульоване!', inlineKeyboard);
+  bot.sendMessage(userId, `Замовлення ${orderNumberFromText} відхилено`);
 }
 
-function userAcceptOrder(chatId, messageId) {
+function userAcceptOrder(userId, orderNumberFromText) {
+  bot.sendMessage(userId, `Замовлення ${orderNumberFromText} продовжено`);
+}
+
+function actualizeInfo({ chatId, keyboards, userId, messageId, text, orderNumberFromText }) {
   const updatedKeyboards = keyboards.slice(); // Create a copy of the original array
-  updatedKeyboards[1] = [
+  updatedKeyboards[3] = [
     {
-      text: 'Інформацію актуалізовано',
+      text: 'Запит вислано (Натисніть знову щоб вислати запит знову)',
       callback_data: 'actualize',
     },
   ];
@@ -195,10 +192,8 @@ function userAcceptOrder(chatId, messageId) {
       inline_keyboard: inlineKeyboard,
     },
   });
-}
 
-function actualizeInfo(chatId, userId) {
-  const inlineKeyboard = {
+  const inlineKeyboardUser = {
     reply_markup: {
       inline_keyboard: [
         [
@@ -217,7 +212,11 @@ function actualizeInfo(chatId, userId) {
     },
   };
 
-  bot.sendMessage(userId, 'Чи ваше замовлення ще актуально?', inlineKeyboard);
+  bot.sendMessage(
+    userId,
+    `Чи ваше замовлення ( Номер замовлення: ${orderNumberFromText} ) ще актуально?`,
+    inlineKeyboardUser
+  );
 }
 
 function sendOrderConfirmation({ chatId, userId, text, messageId, keyboards, orderNumber }) {
@@ -372,6 +371,7 @@ function handleStartCommand(msg) {
             `Ваша адреса: ${data?.userAddress || data?.addressPack}`,
             `Cума замовлення: ${calcTotalPrice} ${activePrice}`,
             `Вага замовлення: ${totalWeight} грам`,
+            `Номер замовлення: ${orderNumber[chatId]}`,
           ];
 
           for (const message of messagesToSend) {
@@ -446,13 +446,13 @@ function handleStartCommand(msg) {
         requestUserPhoto(chatId);
         break;
       case 'actualize':
-        actualizeInfo(chatId, userId);
+        actualizeInfo({ text, chatId, keyboards, userId, messageId, orderNumberFromText });
         break;
       case 'accept':
-        userAcceptOrder(userId, messageId);
+        userAcceptOrder(userId, orderNumberFromText);
         break;
       case 'decline':
-        userDeclineOreder(userId, chatId, messageId);
+        userDeclineOreder(chatId, userId, messageId, orderNumberFromText);
         break;
     }
   });
