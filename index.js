@@ -161,6 +161,65 @@ function paymentConfirm({ chatId, userId, text, messageId, keyboards }) {
   bot.sendMessage(userId, 'Вашу оплату підтверджено✅\nБудь ласка, очікуйте номер відправлення 📦');
 }
 
+function userDeclineOreder(chatId, userId, messageId) {
+  bot.editMessageText('Замовлення відхилено!!!', {
+    chat_id: chatId,
+    message_id: messageId,
+  });
+  const inlineKeyboard = [
+    [
+      {
+        text: 'Почати знову',
+      },
+    ],
+  ];
+
+  sendKeyboardMessage(userId, 'Ваше замовлення було аннульоване!', inlineKeyboard);
+}
+
+function userAcceptOrder(chatId, messageId) {
+  const updatedKeyboards = keyboards.slice(); // Create a copy of the original array
+  updatedKeyboards[1] = [
+    {
+      text: 'Інформацію актуалізовано',
+      callback_data: 'actualize',
+    },
+  ];
+
+  const inlineKeyboard = [...updatedKeyboards];
+
+  bot.editMessageText(text, {
+    chat_id: chatId,
+    message_id: messageId,
+    reply_markup: {
+      inline_keyboard: inlineKeyboard,
+    },
+  });
+}
+
+function actualizeInfo(chatId, userId) {
+  const inlineKeyboard = {
+    reply_markup: {
+      inline_keyboard: [
+        [
+          {
+            text: 'Так',
+            callback_data: JSON.stringify({ confirm: 'accept', chat_id: chatId }),
+          },
+        ],
+        [
+          {
+            text: 'Ні',
+            callback_data: JSON.stringify({ confirm: 'decline', chat_id: chatId }),
+          },
+        ],
+      ],
+    },
+  };
+
+  bot.sendMessage(userId, 'Чи ваше замовлення ще актуально?', inlineKeyboard);
+}
+
 function sendOrderConfirmation({ chatId, userId, text, messageId, keyboards, orderNumber }) {
   // Create a new array with the first element replaced
   const updatedKeyboards = keyboards.slice(); // Create a copy of the original array
@@ -260,6 +319,12 @@ function handleStartCommand(msg) {
               {
                 text: 'Вислати номер пачки',
                 callback_data: JSON.stringify({ confirm: 'send-pack-number', chat_id: chatId }),
+              },
+            ],
+            [
+              {
+                text: 'Актуалізувати користувача',
+                callback_data: JSON.stringify({ confirm: 'actualize', chat_id: chatId }),
               },
             ],
           ],
@@ -379,6 +444,15 @@ function handleStartCommand(msg) {
         break;
       case 'sendPhoto':
         requestUserPhoto(chatId);
+        break;
+      case 'actualize':
+        actualizeInfo(chatId, userId);
+        break;
+      case 'accept':
+        userAcceptOrder(chatId, messageId);
+        break;
+      case 'decline':
+        userDeclineOreder(chatId, userId, messageId);
         break;
     }
   });
