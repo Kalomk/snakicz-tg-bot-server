@@ -4,6 +4,8 @@ import * as dotenv from 'dotenv';
 import { UT_sendKeyboardMessage } from './src/utils';
 import { EH_contactHandler, EH_webDataHandler } from './src/eventHandlers';
 import { SM_onCallbackQuery } from './src/sendingMesagesFuncs';
+import { PrismaClient } from '@prisma/client';
+import { getOrders } from './src/controllers/controller';
 
 dotenv.config();
 
@@ -15,17 +17,16 @@ export const group_chat_for_payment: string = process.env.GROUP_CHAT_FOR_PAYMENT
 export const webAppUrl: string = process.env.WEB_URL || '';
 
 let orderNumber: { [key: string]: string } = {};
-let userPhoneNumber: { [key: string]: string } = {};
-let userFirstTimeClick: { [key: string]: boolean } = {};
 
 // Create Express app
 const app: express.Application = express();
+export const prisma = new PrismaClient();
 
 // Middleware
 app.use(express.json());
 
 // Create Telegram Bot
-const bot: TelegramBot = new TelegramBot(_token, { polling: true });
+export const bot: TelegramBot = new TelegramBot(_token, { polling: true });
 bot.on('polling_error', console.log);
 
 // Function to handle the /start command
@@ -40,15 +41,13 @@ function handleStartCommand(msg: TelegramBot.Message) {
 
   UT_sendKeyboardMessage(bot, chatId, startMessage, contactKeyboard);
 
-  bot.once('contact', (msg) =>
-    EH_contactHandler(bot, msg, userPhoneNumber, orderNumber, userFirstTimeClick)
-  );
+  bot.once('contact', (msg) => EH_contactHandler(msg));
 
-  bot.on('web_app_data', (msg) =>
-    EH_webDataHandler(bot, msg, orderNumber, userPhoneNumber, userFirstTimeClick)
-  );
+  bot.on('web_app_data', (msg) => EH_webDataHandler(msg));
 
-  bot.on('callback_query', (callbackQuery) => SM_onCallbackQuery(bot, callbackQuery, orderNumber));
+  bot.on('callback_query', (callbackQuery) =>
+    SM_onCallbackQuery(bot, callbackQuery, orderNumber, group_chat)
+  );
 }
 
 // Command handlers
@@ -73,6 +72,16 @@ bot.onText(/\Вийти/, (msg) => {
 bot.onText(/\/restart/, (msg) => {
   handleStartCommand(msg);
 });
+
+//routes
+
+app.post('/userInfo', async (req, res) => {
+  const {chatId} = req.body
+
+  const orders = await  getOrders(chatId)
+  return res.status(500).json(orders);
+});
+
 
 // Start the Express server
 const PORT = process.env.PORT || 8000;

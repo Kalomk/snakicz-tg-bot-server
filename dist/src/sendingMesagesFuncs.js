@@ -46,7 +46,7 @@ function SM_sendPaymentMessage(bot, chatId, type) {
             case 'privat':
                 return 'Номер картки: 5363542019838953\nПІБ отримувача: Демементьєва Анастасія\nКурс: 8.8\nСума: сума в злотих помножена на 8.8';
             case 'polish_bank':
-                return 'Номер рахунку:\n24 1600 1462 1731 7466 5000 0001\nПІБ отримувача: Dementieva Anastasiia\nБанк отримувача: PNB Paribas';
+                return 'Номер рахунку:\n61160014621804889540000001\nПІБ отримувача: Roman Lehchonok\nБанк отримувача: BNP Paribas';
         }
     }
     bot.sendMessage(chatId, `${checkType(type)}`, {
@@ -112,16 +112,19 @@ function SM_paymentConfirm({ bot, chatId, userId, text, messageId, keyboards, })
     bot.sendMessage(userId, 'Вашу оплату підтверджено✅\nБудь ласка, очікуйте номер відправлення 📦');
 }
 exports.SM_paymentConfirm = SM_paymentConfirm;
-function SM_userDeclineOrder(bot, chatId, userId, messageId, orderNumberFromText) {
+function SM_userDeclineOrder({ bot, chatId, group_id, messageId_group, messageId, orderNumberFromText, }) {
     bot.editMessageText('Ваше замовлення було аннульоване!', {
         chat_id: chatId,
         message_id: messageId,
     });
-    bot.sendMessage(userId, `Замовлення ${orderNumberFromText} відхилено`);
+    bot.editMessageText(`Замовлення ${orderNumberFromText} відхилено`, {
+        chat_id: group_id,
+        message_id: messageId_group,
+    });
 }
 exports.SM_userDeclineOrder = SM_userDeclineOrder;
-function SM_userAcceptOrder(bot, userId, orderNumberFromText) {
-    bot.sendMessage(userId, `Замовлення ${orderNumberFromText} продовжено`);
+function SM_userAcceptOrder(bot, groupId, orderNumberFromText) {
+    bot.sendMessage(groupId, `Замовлення ${orderNumberFromText} продовжено`);
 }
 exports.SM_userAcceptOrder = SM_userAcceptOrder;
 function SM_actualizeInfo({ bot, chatId, keyboards, userId, messageId, text, orderNumberFromText, }) {
@@ -146,13 +149,13 @@ function SM_actualizeInfo({ bot, chatId, keyboards, userId, messageId, text, ord
                 [
                     {
                         text: 'Так',
-                        callback_data: JSON.stringify({ confirm: 'accept', chat_id: chatId }),
+                        callback_data: JSON.stringify({ confirm: 'accept', message_id: messageId }),
                     },
                 ],
                 [
                     {
                         text: 'Ні',
-                        callback_data: JSON.stringify({ confirm: 'decline', chat_id: chatId }),
+                        callback_data: JSON.stringify({ confirm: 'decline', message_id: messageId }),
                     },
                 ],
             ],
@@ -166,8 +169,8 @@ function SM_sendOrderConfirmation({ bot, chatId, keyboards, userId, messageId, t
     const updatedKeyboards = keyboards.slice(); // Create a copy of the original array
     updatedKeyboards[2] = [
         {
-            text: 'Оплату підтверджено!!!',
-            callback_data: 'payment_confirmation',
+            text: 'Інформацію о посилці вислано (Знову вислати)!!!',
+            callback_data: 'send-pack-number',
         },
     ];
     const inlineKeyboard = [...updatedKeyboards];
@@ -192,13 +195,14 @@ function SM_sendOrderConfirmation({ bot, chatId, keyboards, userId, messageId, t
     });
 }
 exports.SM_sendOrderConfirmation = SM_sendOrderConfirmation;
-function SM_onCallbackQuery(bot, callbackQuery, orderNumber) {
+function SM_onCallbackQuery(bot, callbackQuery, orderNumber, group_id) {
     const action = JSON.parse(callbackQuery.data);
     const text = callbackQuery?.message?.text;
     const chatId = callbackQuery?.message?.chat.id;
     const messageId = callbackQuery?.message?.message_id;
     const keyboards = callbackQuery?.message?.reply_markup?.inline_keyboard;
     const userId = action?.chat_id;
+    const messageIdGroup = action?.message_id;
     let orderNumberFromText;
     const orderNumberMatch = text?.match(/Номер замовлення:\s+(\d+)/);
     if (orderNumberMatch && orderNumberMatch[1]) {
@@ -248,10 +252,17 @@ function SM_onCallbackQuery(bot, callbackQuery, orderNumber) {
             });
             break;
         case 'accept':
-            SM_userAcceptOrder(bot, userId, orderNumberFromText);
+            SM_userAcceptOrder(bot, group_id, orderNumberFromText);
             break;
         case 'decline':
-            SM_userDeclineOrder(bot, chatId, userId, messageId, orderNumberFromText);
+            SM_userDeclineOrder({
+                bot,
+                chatId,
+                group_id,
+                messageId_group: messageIdGroup,
+                messageId,
+                orderNumberFromText: orderNumberFromText,
+            });
             break;
     }
 }

@@ -71,7 +71,7 @@ export function SM_sendPaymentMessage(bot: TelegramBot, chatId: number, type: st
       case 'privat':
         return 'Номер картки: 5363542019838953\nПІБ отримувача: Демементьєва Анастасія\nКурс: 8.8\nСума: сума в злотих помножена на 8.8';
       case 'polish_bank':
-        return 'Номер рахунку:\n24 1600 1462 1731 7466 5000 0001\nПІБ отримувача: Dementieva Anastasiia\nБанк отримувача: PNB Paribas';
+        return 'Номер рахунку:\n61160014621804889540000001\nПІБ отримувача: Roman Lehchonok\nБанк отримувача: BNP Paribas';
     }
   }
 
@@ -153,23 +153,34 @@ export function SM_paymentConfirm({
   bot.sendMessage(userId, 'Вашу оплату підтверджено✅\nБудь ласка, очікуйте номер відправлення 📦');
 }
 
-export function SM_userDeclineOrder(
-  bot: TelegramBot,
-  chatId: number,
-  userId: number,
-  messageId: number,
-  orderNumberFromText: string
-) {
+export function SM_userDeclineOrder({
+  bot,
+  chatId,
+  group_id,
+  messageId_group,
+  messageId,
+  orderNumberFromText,
+}: {
+  bot: TelegramBot;
+  chatId: number;
+  group_id: string;
+  messageId_group: number;
+  messageId: number;
+  orderNumberFromText: string;
+}) {
   bot.editMessageText('Ваше замовлення було аннульоване!', {
     chat_id: chatId,
     message_id: messageId,
   });
 
-  bot.sendMessage(userId, `Замовлення ${orderNumberFromText} відхилено`);
+  bot.editMessageText(`Замовлення ${orderNumberFromText} відхилено`, {
+    chat_id: group_id,
+    message_id: messageId_group,
+  });
 }
 
-export function SM_userAcceptOrder(bot: TelegramBot, userId: number, orderNumberFromText: string) {
-  bot.sendMessage(userId, `Замовлення ${orderNumberFromText} продовжено`);
+export function SM_userAcceptOrder(bot: TelegramBot, groupId:string, orderNumberFromText: string) {
+  bot.sendMessage(groupId, `Замовлення ${orderNumberFromText} продовжено`);
 }
 
 export function SM_actualizeInfo({
@@ -205,13 +216,13 @@ export function SM_actualizeInfo({
         [
           {
             text: 'Так',
-            callback_data: JSON.stringify({ confirm: 'accept', chat_id: chatId }),
+            callback_data: JSON.stringify({ confirm: 'accept', message_id: messageId }),
           },
         ],
         [
           {
             text: 'Ні',
-            callback_data: JSON.stringify({ confirm: 'decline', chat_id: chatId }),
+            callback_data: JSON.stringify({ confirm: 'decline', message_id: messageId }),
           },
         ],
       ],
@@ -238,8 +249,8 @@ export function SM_sendOrderConfirmation({
   const updatedKeyboards = keyboards.slice(); // Create a copy of the original array
   updatedKeyboards[2] = [
     {
-      text: 'Оплату підтверджено!!!',
-      callback_data: 'payment_confirmation',
+      text: 'Інформацію о посилці вислано (Знову вислати)!!!',
+      callback_data: 'send-pack-number',
     },
   ];
   const inlineKeyboard = [...updatedKeyboards];
@@ -275,7 +286,8 @@ export function SM_sendOrderConfirmation({
 export function SM_onCallbackQuery(
   bot: TelegramBot,
   callbackQuery: TelegramBot.CallbackQuery,
-  orderNumber: { [key: string]: string }
+  orderNumber: { [key: string]: string },
+  group_id: string
 ) {
   const action = JSON.parse(callbackQuery.data!);
   const text = callbackQuery?.message?.text!;
@@ -283,6 +295,8 @@ export function SM_onCallbackQuery(
   const messageId = callbackQuery?.message?.message_id!;
   const keyboards = callbackQuery?.message?.reply_markup?.inline_keyboard!;
   const userId = action?.chat_id!;
+  const messageIdGroup = action?.message_id!;
+
   let orderNumberFromText;
   const orderNumberMatch = text?.match(/Номер замовлення:\s+(\d+)/);
 
@@ -333,10 +347,17 @@ export function SM_onCallbackQuery(
       });
       break;
     case 'accept':
-      SM_userAcceptOrder(bot, userId, orderNumberFromText!);
+      SM_userAcceptOrder(bot, group_id, orderNumberFromText!);
       break;
     case 'decline':
-      SM_userDeclineOrder(bot, chatId!, userId, messageId!, orderNumberFromText!);
+      SM_userDeclineOrder({
+        bot,
+        chatId,
+        group_id,
+        messageId_group: messageIdGroup,
+        messageId,
+        orderNumberFromText: orderNumberFromText!,
+      });
       break;
   }
 }

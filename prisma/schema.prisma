@@ -1,0 +1,52 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+
+}
+
+
+model User {
+  id         Int      @id @default(autoincrement())
+  chatId      Int @unique
+  phoneNumber   String
+  isFirstTimeBuy Boolean      @default(true)
+  ordersCount Int @default(0)
+  
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  order Order[]
+}
+
+model Order {
+  id                Int       @id @default(autoincrement())
+  userName          String    // Им'я та Прізвище
+  userLastName      String    // Им'я та Прізвище
+  addressPack       String?   // Адреса-Пачкомату
+  userAddress       String?   // Адреса-покупця
+  userCity          String?   // Місто
+  userIndexCity     String?   // Індекс
+  userNickname      String    // Нік
+  isCatExist        Boolean   // Є котик
+  orderNumber       String  @unique  // Номер замовлення
+  freeDelivery      Boolean   // Безкоштовна доставка
+  totalPrice        Float     // Сума замовлення
+  activePrice       String    // Активна валюта
+  phoneNumber       String?   // Номер телефону для відправки
+  contactPhoneNumber String? // Номер телефону для контакту
+  email             String?   // Емейл
+  totalWeight       Float     // Вага замовлення
+  orderItems        Json      // JSON array of order items
+
+   // Define the opposite relation field
+  userId Int
+  user    User @relation(fields: [userId], references: [chatId])
+}
