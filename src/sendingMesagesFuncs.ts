@@ -1,8 +1,9 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { group_chat, group_chat_for_payment } from '..';
+import { bot } from '..';
+
 
 interface SendingMessageTypes {
-  bot: TelegramBot;
   chatId: number;
   userId: number;
   text: string;
@@ -13,7 +14,6 @@ interface SendingMessageTypes {
 type SendingMessageTypeWithOrderNuymber = SendingMessageTypes & { orderNumberFromText: string };
 
 export function SM_confrimOrder({
-  bot,
   chatId,
   userId,
   text,
@@ -65,7 +65,7 @@ export function SM_confrimOrder({
   );
 }
 
-export function SM_sendPaymentMessage(bot: TelegramBot, chatId: number, type: string) {
+export function SM_sendPaymentMessage(chatId: number, type: string) {
   function checkType(type: string) {
     switch (type) {
       case 'privat':
@@ -90,7 +90,6 @@ export function SM_sendPaymentMessage(bot: TelegramBot, chatId: number, type: st
 }
 
 export function SM_requestUserPhoto(
-  bot: TelegramBot,
   chat_id: number,
   orderNumber: { [key: string]: string }
 ) {
@@ -114,17 +113,16 @@ export function SM_requestUserPhoto(
       } catch (error) {
         console.error('Error sending photo:', error);
         bot.sendMessage(chatId, 'Під час відправлення фото сталася помилка 😳\nСпробуйте знову');
-        SM_requestUserPhoto(bot, chatId, orderNumber);
+        SM_requestUserPhoto(chatId, orderNumber);
       }
     } else {
       bot.sendMessage(chatId, 'Повідомлення не містить фото підтвердження оплати');
-      SM_requestUserPhoto(bot, chatId, orderNumber);
+      SM_requestUserPhoto(chatId, orderNumber);
     }
   });
 }
 
 export function SM_paymentConfirm({
-  bot,
   chatId,
   userId,
   text,
@@ -154,7 +152,6 @@ export function SM_paymentConfirm({
 }
 
 export function SM_userDeclineOrder({
-  bot,
   chatId,
   group_id,
   messageId_group,
@@ -184,7 +181,6 @@ export function SM_userAcceptOrder(bot: TelegramBot, groupId:string, orderNumber
 }
 
 export function SM_actualizeInfo({
-  bot,
   chatId,
   keyboards,
   userId,
@@ -237,7 +233,6 @@ export function SM_actualizeInfo({
 }
 
 export function SM_sendOrderConfirmation({
-  bot,
   chatId,
   keyboards,
   userId,
@@ -284,7 +279,6 @@ export function SM_sendOrderConfirmation({
 }
 
 export function SM_onCallbackQuery(
-  bot: TelegramBot,
   callbackQuery: TelegramBot.CallbackQuery,
   orderNumber: { [key: string]: string },
   group_id: string
@@ -310,20 +304,19 @@ export function SM_onCallbackQuery(
 
   switch (action.confirm) {
     case 'confirm':
-      SM_confrimOrder({ bot, text, chatId, userId, messageId, keyboards });
+      SM_confrimOrder({text, chatId, userId, messageId, keyboards });
       break;
     case 'privat':
-      SM_sendPaymentMessage(bot, chatId!, action.confirm);
+      SM_sendPaymentMessage(chatId!, action.confirm);
       break;
     case 'polish_bank':
-      SM_sendPaymentMessage(bot, chatId!, action.confirm);
+      SM_sendPaymentMessage(chatId!, action.confirm);
       break;
     case 'pay-confirm':
-      SM_paymentConfirm({ bot, text, chatId, userId, messageId, keyboards });
+      SM_paymentConfirm({text, chatId, userId, messageId, keyboards });
       break;
     case 'send-pack-number':
       SM_sendOrderConfirmation({
-        bot,
         text,
         chatId,
         userId,
@@ -333,11 +326,10 @@ export function SM_onCallbackQuery(
       });
       break;
     case 'sendPhoto':
-      SM_requestUserPhoto(bot, chatId!, orderNumber);
+      SM_requestUserPhoto(chatId!, orderNumber);
       break;
     case 'actualize':
       SM_actualizeInfo({
-        bot,
         text,
         chatId,
         keyboards,

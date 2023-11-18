@@ -47,7 +47,7 @@ function handleStartCommand(msg: TelegramBot.Message) {
   bot.on('web_app_data', (msg) => EH_webDataHandler(msg));
 
   bot.on('callback_query', (callbackQuery) =>
-    SM_onCallbackQuery(bot, callbackQuery, orderNumber, group_chat)
+    SM_onCallbackQuery(callbackQuery, orderNumber, group_chat)
   );
 }
 
