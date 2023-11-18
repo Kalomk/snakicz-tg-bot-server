@@ -54,6 +54,7 @@ exports.bot.on('polling_error', console.log);
 // Function to handle the /start command
 function handleStartCommand(msg) {
     exports.bot.removeAllListeners();
+    exports.prisma.$connect();
     const chatId = msg.chat.id;
     const startMessage = 'Вас вітає чат-бот Snakicz 🐟\nДля оформления замовлення, будь ласка, поділіться своїм номером телефону 👇🏻\nВи також можете оформити замовлення у нашого менеджера в [телеграм](https://t.me/snakicz_manager) або [інстаграм](https://www.instagram.com/snakicz/)';
     const contactKeyboard = [[{ text: 'Мій телефон', request_contact: true }], ['Вийти']];

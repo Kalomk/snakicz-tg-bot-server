@@ -32,6 +32,7 @@ bot.on('polling_error', console.log);
 // Function to handle the /start command
 function handleStartCommand(msg: TelegramBot.Message) {
   bot.removeAllListeners();
+  prisma.$connect()
 
   const chatId = msg.chat.id;
 
