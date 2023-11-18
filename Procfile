@@ -1,1 +1,1 @@
-worker: node dist/index.js
+worker: npx prisma generate && node dist/index.js

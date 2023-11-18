@@ -5,6 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "build": "tsc",
+    "generate": "npx prisma generate",
     "start": "node dist/index.js",
     "start:dev": "nodemon index.ts",
     "db:migrate": "npx prisma migrate dev --name user-entity --create-only && npx prisma generate",
@@ -15,6 +16,9 @@
   ],
   "author": "",
   "license": "ISC",
+  "prisma": {
+    "schema": "prisma/schema.prisma"
+  },
   "dependencies": {
     "@prisma/client": "^5.6.0",
     "cors": "^2.8.5",
