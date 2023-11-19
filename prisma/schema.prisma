@@ -45,6 +45,10 @@ model Order {
   email             String?   // Емейл
   totalWeight       Float     // Вага замовлення
   orderItems        Json      // JSON array of order items
+  isStatisted       Boolean     @default(false)
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
    // Define the opposite relation field
   userId Int

@@ -3,9 +3,11 @@ import { group_chat, prisma, webAppUrl } from '..';
 import { UT_sendKeyboardMessage } from './utils';
 import { createOrFindExistUser, createOrder } from './controllers/controller';
 import { bot } from '..';
+import { SM_actualizeInfo, SM_confrimOrder, SM_paymentConfirm, SM_requestUserPhoto, SM_sendOrderConfirmation, SM_sendPaymentMessage, SM_userAcceptOrder, SM_userDeclineOrder } from './sendingMesagesFuncs';
 
 export async function EH_webDataHandler(msg: TelegramBot.Message) {
   if (msg.web_app_data?.data) {
+
     const chatId = msg.chat.id;
     const userName = msg.chat.username;
     // Find the user by chatId
@@ -73,9 +75,6 @@ export async function EH_webDataHandler(msg: TelegramBot.Message) {
           activePrice,
           rightShipPrice,
           rightCurrentCountry,
-          idFromWeb,
-          queryId,
-          user
         } = dataFromResponse;
         const calcTotalPrice = +totalPrice + Number(rightShipPrice);
         // Functions to format messages
@@ -88,7 +87,7 @@ export async function EH_webDataHandler(msg: TelegramBot.Message) {
         const firstTimeBuyText = isFirstTimeBuy ? 'так' : 'ні';
         const userOrderCountText = !isFirstTimeBuy
           ? `Кількість замовлень за весь час: ${userOrderCount}`
-          : null;
+          : '';
         const userAddress = data?.userAddress || 'нема';
         const country = rightCurrentCountry;
         const userCity = data?.userCity;
@@ -177,7 +176,7 @@ export async function EH_webDataHandler(msg: TelegramBot.Message) {
 
          // Update the user's values
       await prisma.user.update({
-        where: { id: user.id },
+        where: { chatId:user.chatId },
         data: {
           ordersCount: user.ordersCount + 1, // Increment ordersCount by 1
           isFirstTimeBuy: false, // Set isFirstTimeBuy to false
@@ -199,11 +198,96 @@ export async function EH_contactHandler(msg: TelegramBot.Message) {
   await createOrFindExistUser({ chatId:chatId, phoneNumber }).then((user) => {
     const isFirstTimeBuy = user?.isFirstTimeBuy
 
-    const url = isFirstTimeBuy ? webAppUrl + '/priceSelect' : webAppUrl;
 
-    const storeKeyboard = [[{ text: 'Магазин', web_app: { url } }]];
+    const storeKeyboard = [[{ text: 'Магазин', web_app: { url: webAppUrl } }]];
     const thankYouMessage = "Дякуємо за контакти. Для продовження натисніть 'Магазин'";
+
+    
     UT_sendKeyboardMessage(bot, chatId, thankYouMessage, storeKeyboard);
 
+    // bot.sendMessage(chatId, 'Заходи в наш интернет магазин по кнопке ниже', {
+    //     reply_markup: {
+    //         inline_keyboard: [
+    //             [{text: 'Повторити замовлення', web_app: {url: webAppUrl + "/prevOrders"}}]
+    //         ]
+    //     }
+    // })
   });
 }
+
+export async function EH_onCallbackQuery(
+    callbackQuery: TelegramBot.CallbackQuery,
+    group_id: string
+  ) {
+    const action = JSON.parse(callbackQuery.data!);
+    const text = callbackQuery?.message?.text!;
+    const chatId = callbackQuery?.message?.chat.id!;
+    const messageId = callbackQuery?.message?.message_id!;
+    const keyboards = callbackQuery?.message?.reply_markup?.inline_keyboard!;
+    const userId = action?.chat_id!;
+    const messageIdGroup = action?.message_id!;
+  
+  
+    let orderNumberFromText;
+    const orderNumberMatch = text?.match(/Номер замовлення:\s+(\d+)/);
+  
+    if (orderNumberMatch && orderNumberMatch[1]) {
+      // Extracted order number
+      orderNumberFromText = orderNumberMatch[1];
+      console.log(`Order Number: ${orderNumberFromText}`);
+    } else {
+      console.log('Order number not found in the text.');
+    }
+  
+    switch (action.confirm) {
+      case 'confirm':
+        SM_confrimOrder({text, chatId, userId, messageId, keyboards });
+        break;
+      case 'privat':
+        SM_sendPaymentMessage(chatId!, action.confirm);
+        break;
+      case 'polish_bank':
+        SM_sendPaymentMessage(chatId!, action.confirm);
+        break;
+      case 'pay-confirm':
+        SM_paymentConfirm({text, chatId, userId, messageId, keyboards });
+        break;
+      case 'send-pack-number':
+        SM_sendOrderConfirmation({
+          text,
+          chatId,
+          userId,
+          messageId,
+          keyboards,
+          orderNumberFromText: orderNumberFromText!,
+        });
+        break;
+      case 'sendPhoto':
+        SM_requestUserPhoto(chatId!);
+        break;
+      case 'actualize':
+        SM_actualizeInfo({
+          text,
+          chatId,
+          keyboards,
+          userId,
+          messageId,
+          orderNumberFromText: orderNumberFromText!,
+        });
+        break;
+      case 'accept':
+        SM_userAcceptOrder(bot, group_id, orderNumberFromText!);
+        break;
+      case 'decline':
+        SM_userDeclineOrder({
+          bot,
+          chatId,
+          group_id,
+          messageId_group: messageIdGroup,
+          messageId,
+          orderNumberFromText: orderNumberFromText!,
+        });
+        break;
+    }
+  }
+  

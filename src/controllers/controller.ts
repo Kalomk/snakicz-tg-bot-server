@@ -1,4 +1,6 @@
 import { prisma } from '../..';
+import { Prisma } from '@prisma/client';
+
 
 interface OrderType {
   userName: string; // Им'я та Прізвище
@@ -100,17 +102,40 @@ const createOrder = async ({ chatId, orderData }: { chatId: number; orderData: O
 // };
 
 // Get an order by orderNumber
-const getOrder = async (orderNumber: string) => {
-  try {
-    const order = await prisma.order.findUnique({
-      where: { orderNumber },
-    });
-    return order;
-  } catch (error) {
-    console.error('Error fetching order:', error);
-    throw error;
-  }
-};
+// const getOrder = async (orderNumber: string) => {
+//   try {
+//     const order = await prisma.order.findUnique({
+//       where: { orderNumber },
+//     });
+//     return order;
+//   } catch (error) {
+//     console.error('Error fetching order:', error);
+//     throw error;
+//   }
+// };
+
+// Get the last added order for a specific user
+const getLastAddedOrderForUser = async (chatId: number) => {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { chatId },
+      });
+  
+      if (!user) {
+        throw new Error(`User with chatId ${chatId} not found.`);
+      }
+  
+      const order = await prisma.order.findFirst({
+        where: { userId: user.chatId},
+        orderBy: { createdAt: Prisma.SortOrder.desc } as Prisma.OrderOrderByWithRelationInput,
+      });
+  
+      return order;
+    } catch (error) {
+      console.error('Error fetching last added order for user:', error);
+      throw error;
+    }
+  };
 
 // Get all orders for a specific user (by chatId)
 const getOrders = async (chatId: number) => {
@@ -124,4 +149,4 @@ const getOrders = async (chatId: number) => {
     throw error;
   }
 };
-export { createOrFindExistUser, getOrders, getOrder, createOrder };
+export { createOrFindExistUser, getOrders,getLastAddedOrderForUser, createOrder };

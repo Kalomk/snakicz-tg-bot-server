@@ -2,10 +2,10 @@ import TelegramBot from 'node-telegram-bot-api';
 import express from 'express';
 import * as dotenv from 'dotenv';
 import { UT_sendKeyboardMessage } from './src/utils';
-import { EH_contactHandler, EH_webDataHandler } from './src/eventHandlers';
-import { SM_onCallbackQuery } from './src/sendingMesagesFuncs';
+import { EH_contactHandler, EH_onCallbackQuery, EH_webDataHandler } from './src/eventHandlers';
 import { PrismaClient } from '@prisma/client';
-import { getOrders } from './src/controllers/controller';
+import { getLastAddedOrderForUser, getOrders } from './src/controllers/controller';
+import cors from 'cors'
 
 dotenv.config();
 
@@ -16,14 +16,14 @@ export const group_chat: string = process.env.GROUP_CHAT || '';
 export const group_chat_for_payment: string = process.env.GROUP_CHAT_FOR_PAYMENT || '';
 export const webAppUrl: string = process.env.WEB_URL || '';
 
-let orderNumber: { [key: string]: string } = {};
-
 // Create Express app
 const app: express.Application = express();
 export const prisma = new PrismaClient();
 
 // Middleware
 app.use(express.json());
+app.use(cors());
+
 
 // Create Telegram Bot
 export const bot: TelegramBot = new TelegramBot(_token, { polling: true });
@@ -47,7 +47,7 @@ function handleStartCommand(msg: TelegramBot.Message) {
   bot.on('web_app_data', (msg) => EH_webDataHandler(msg));
 
   bot.on('callback_query', (callbackQuery) =>
-    SM_onCallbackQuery(callbackQuery, orderNumber, group_chat)
+    EH_onCallbackQuery(callbackQuery,group_chat)
   );
 }
 
@@ -79,7 +79,14 @@ bot.onText(/\/restart/, (msg) => {
 app.post('/userInfo', async (req, res) => {
   const {chatId} = req.body
 
+  console.log('fetch')
   const orders = await  getOrders(chatId)
+  return res.status(500).json(orders);
+});
+
+app.post('/lastUser', async (req, res) => {
+  const {chatId} = req.body
+  const orders = await getLastAddedOrderForUser(chatId)
   return res.status(500).json(orders);
 });
 

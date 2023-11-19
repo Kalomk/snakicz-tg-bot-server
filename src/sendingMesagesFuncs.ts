@@ -1,6 +1,7 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { group_chat, group_chat_for_payment } from '..';
 import { bot } from '..';
+import { getLastAddedOrderForUser } from './controllers/controller';
 
 
 interface SendingMessageTypes {
@@ -91,33 +92,32 @@ export function SM_sendPaymentMessage(chatId: number, type: string) {
 
 export function SM_requestUserPhoto(
   chat_id: number,
-  orderNumber: { [key: string]: string }
 ) {
   bot.sendMessage(chat_id, 'Вишліть фотопідтвердження оплати,прикріпивши фото знизу 👇');
   // Listen for messages from the user
   bot.once('photo', async (msg) => {
     const chatId = msg.chat.id;
+    const orderNumber = await getLastAddedOrderForUser(chatId).then(order => order?.orderNumber)
+
 
     if (msg.photo && msg.photo.length > 0) {
       // The `msg.photo` property is an array of photo sizes
       // You can access different sizes using indexes (0 - smallest, 2 - largest)
-      const photo = msg.photo[msg.photo.length - 1]; // Use the largest available photo
-
+      const photo = msg.photo[msg.photo.length - 1];
       try {
         // Send the photo to the group chat
 
         await bot.sendPhoto(group_chat_for_payment, photo.file_id);
-        bot.sendMessage(group_chat_for_payment, `Скрін підтвердження №${orderNumber[chatId]}`);
+        bot.sendMessage(group_chat_for_payment, `Скрін підтвердження №${orderNumber}`);
         bot.sendMessage(chatId, 'Фото підтвердження оплати відправлено 😍\nЧекайте на відправку');
-        delete orderNumber[chatId];
       } catch (error) {
         console.error('Error sending photo:', error);
         bot.sendMessage(chatId, 'Під час відправлення фото сталася помилка 😳\nСпробуйте знову');
-        SM_requestUserPhoto(chatId, orderNumber);
+        SM_requestUserPhoto(chatId);
       }
     } else {
       bot.sendMessage(chatId, 'Повідомлення не містить фото підтвердження оплати');
-      SM_requestUserPhoto(chatId, orderNumber);
+      SM_requestUserPhoto(chatId);
     }
   });
 }
@@ -278,78 +278,3 @@ export function SM_sendOrderConfirmation({
   });
 }
 
-export function SM_onCallbackQuery(
-  callbackQuery: TelegramBot.CallbackQuery,
-  orderNumber: { [key: string]: string },
-  group_id: string
-) {
-  const action = JSON.parse(callbackQuery.data!);
-  const text = callbackQuery?.message?.text!;
-  const chatId = callbackQuery?.message?.chat.id!;
-  const messageId = callbackQuery?.message?.message_id!;
-  const keyboards = callbackQuery?.message?.reply_markup?.inline_keyboard!;
-  const userId = action?.chat_id!;
-  const messageIdGroup = action?.message_id!;
-
-  let orderNumberFromText;
-  const orderNumberMatch = text?.match(/Номер замовлення:\s+(\d+)/);
-
-  if (orderNumberMatch && orderNumberMatch[1]) {
-    // Extracted order number
-    orderNumberFromText = orderNumberMatch[1];
-    console.log(`Order Number: ${orderNumberFromText}`);
-  } else {
-    console.log('Order number not found in the text.');
-  }
-
-  switch (action.confirm) {
-    case 'confirm':
-      SM_confrimOrder({text, chatId, userId, messageId, keyboards });
-      break;
-    case 'privat':
-      SM_sendPaymentMessage(chatId!, action.confirm);
-      break;
-    case 'polish_bank':
-      SM_sendPaymentMessage(chatId!, action.confirm);
-      break;
-    case 'pay-confirm':
-      SM_paymentConfirm({text, chatId, userId, messageId, keyboards });
-      break;
-    case 'send-pack-number':
-      SM_sendOrderConfirmation({
-        text,
-        chatId,
-        userId,
-        messageId,
-        keyboards,
-        orderNumberFromText: orderNumberFromText!,
-      });
-      break;
-    case 'sendPhoto':
-      SM_requestUserPhoto(chatId!, orderNumber);
-      break;
-    case 'actualize':
-      SM_actualizeInfo({
-        text,
-        chatId,
-        keyboards,
-        userId,
-        messageId,
-        orderNumberFromText: orderNumberFromText!,
-      });
-      break;
-    case 'accept':
-      SM_userAcceptOrder(bot, group_id, orderNumberFromText!);
-      break;
-    case 'decline':
-      SM_userDeclineOrder({
-        bot,
-        chatId,
-        group_id,
-        messageId_group: messageIdGroup,
-        messageId,
-        orderNumberFromText: orderNumberFromText!,
-      });
-      break;
-  }
-}
