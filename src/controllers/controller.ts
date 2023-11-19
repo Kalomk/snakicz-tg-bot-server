@@ -1,5 +1,4 @@
 import { prisma } from '../..';
-import { Prisma } from '@prisma/client';
 
 
 interface OrderType {
@@ -127,7 +126,7 @@ const getLastAddedOrderForUser = async (chatId: number) => {
   
       const order = await prisma.order.findFirst({
         where: { userId: user.chatId},
-        orderBy: { createdAt: Prisma.SortOrder.desc } as Prisma.OrderOrderByWithRelationInput,
+        orderBy: { createdAt: 'desc' } as any,
       });
   
       return order;
