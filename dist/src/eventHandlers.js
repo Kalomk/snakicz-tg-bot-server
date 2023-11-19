@@ -1,10 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EH_contactHandler = exports.EH_webDataHandler = void 0;
+exports.EH_onCallbackQuery = exports.EH_contactHandler = exports.EH_webDataHandler = void 0;
 const __1 = require("..");
 const utils_1 = require("./utils");
 const controller_1 = require("./controllers/controller");
 const __2 = require("..");
+const sendingMesagesFuncs_1 = require("./sendingMesagesFuncs");
 async function EH_webDataHandler(msg) {
     if (msg.web_app_data?.data) {
         const chatId = msg.chat.id;
@@ -58,7 +59,7 @@ async function EH_webDataHandler(msg) {
             (0, utils_1.UT_sendKeyboardMessage)(__2.bot, chatId, 'Замовлення відправлено', inlineKeyboard);
             try {
                 const dataFromResponse = JSON.parse(msg.web_app_data.data);
-                const { data, products, totalPrice, totalWeight, freeDelivery, isCatExist, activePrice, rightShipPrice, rightCurrentCountry, idFromWeb, queryId, user } = dataFromResponse;
+                const { data, products, totalPrice, totalWeight, freeDelivery, isCatExist, activePrice, rightShipPrice, rightCurrentCountry, } = dataFromResponse;
                 const calcTotalPrice = +totalPrice + Number(rightShipPrice);
                 // Functions to format messages
                 function formatProduct(count, title, weight) {
@@ -69,7 +70,7 @@ async function EH_webDataHandler(msg) {
                 const firstTimeBuyText = isFirstTimeBuy ? 'так' : 'ні';
                 const userOrderCountText = !isFirstTimeBuy
                     ? `Кількість замовлень за весь час: ${userOrderCount}`
-                    : null;
+                    : '';
                 const userAddress = data?.userAddress || 'нема';
                 const country = rightCurrentCountry;
                 const userCity = data?.userCity;
@@ -148,7 +149,7 @@ async function EH_webDataHandler(msg) {
                 sendProducts();
                 // Update the user's values
                 await __1.prisma.user.update({
-                    where: { id: user.id },
+                    where: { chatId: user.chatId },
                     data: {
                         ordersCount: user.ordersCount + 1,
                         isFirstTimeBuy: false, // Set isFirstTimeBuy to false
@@ -168,11 +169,87 @@ async function EH_contactHandler(msg) {
     const phoneNumber = msg?.contact?.phone_number;
     await (0, controller_1.createOrFindExistUser)({ chatId: chatId, phoneNumber }).then((user) => {
         const isFirstTimeBuy = user?.isFirstTimeBuy;
-        const url = isFirstTimeBuy ? __1.webAppUrl + '/priceSelect' : __1.webAppUrl;
-        const storeKeyboard = [[{ text: 'Магазин', web_app: { url } }]];
+        const storeKeyboard = [[{ text: 'Магазин', web_app: { url: __1.webAppUrl } }]];
         const thankYouMessage = "Дякуємо за контакти. Для продовження натисніть 'Магазин'";
         (0, utils_1.UT_sendKeyboardMessage)(__2.bot, chatId, thankYouMessage, storeKeyboard);
+        // bot.sendMessage(chatId, 'Заходи в наш интернет магазин по кнопке ниже', {
+        //     reply_markup: {
+        //         inline_keyboard: [
+        //             [{text: 'Повторити замовлення', web_app: {url: webAppUrl + "/prevOrders"}}]
+        //         ]
+        //     }
+        // })
     });
 }
 exports.EH_contactHandler = EH_contactHandler;
+async function EH_onCallbackQuery(callbackQuery, group_id) {
+    const action = JSON.parse(callbackQuery.data);
+    const text = callbackQuery?.message?.text;
+    const chatId = callbackQuery?.message?.chat.id;
+    const messageId = callbackQuery?.message?.message_id;
+    const keyboards = callbackQuery?.message?.reply_markup?.inline_keyboard;
+    const userId = action?.chat_id;
+    const messageIdGroup = action?.message_id;
+    let orderNumberFromText;
+    const orderNumberMatch = text?.match(/Номер замовлення:\s+(\d+)/);
+    if (orderNumberMatch && orderNumberMatch[1]) {
+        // Extracted order number
+        orderNumberFromText = orderNumberMatch[1];
+        console.log(`Order Number: ${orderNumberFromText}`);
+    }
+    else {
+        console.log('Order number not found in the text.');
+    }
+    switch (action.confirm) {
+        case 'confirm':
+            (0, sendingMesagesFuncs_1.SM_confrimOrder)({ text, chatId, userId, messageId, keyboards });
+            break;
+        case 'privat':
+            (0, sendingMesagesFuncs_1.SM_sendPaymentMessage)(chatId, action.confirm);
+            break;
+        case 'polish_bank':
+            (0, sendingMesagesFuncs_1.SM_sendPaymentMessage)(chatId, action.confirm);
+            break;
+        case 'pay-confirm':
+            (0, sendingMesagesFuncs_1.SM_paymentConfirm)({ text, chatId, userId, messageId, keyboards });
+            break;
+        case 'send-pack-number':
+            (0, sendingMesagesFuncs_1.SM_sendOrderConfirmation)({
+                text,
+                chatId,
+                userId,
+                messageId,
+                keyboards,
+                orderNumberFromText: orderNumberFromText,
+            });
+            break;
+        case 'sendPhoto':
+            (0, sendingMesagesFuncs_1.SM_requestUserPhoto)(chatId);
+            break;
+        case 'actualize':
+            (0, sendingMesagesFuncs_1.SM_actualizeInfo)({
+                text,
+                chatId,
+                keyboards,
+                userId,
+                messageId,
+                orderNumberFromText: orderNumberFromText,
+            });
+            break;
+        case 'accept':
+            (0, sendingMesagesFuncs_1.SM_userAcceptOrder)(__2.bot, group_id, orderNumberFromText);
+            break;
+        case 'decline':
+            (0, sendingMesagesFuncs_1.SM_userDeclineOrder)({
+                bot: __2.bot,
+                chatId,
+                group_id,
+                messageId_group: messageIdGroup,
+                messageId,
+                orderNumberFromText: orderNumberFromText,
+            });
+            break;
+    }
+}
+exports.EH_onCallbackQuery = EH_onCallbackQuery;
 //# sourceMappingURL=eventHandlers.js.map
