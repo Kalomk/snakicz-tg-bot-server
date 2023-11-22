@@ -84,11 +84,6 @@ app.post('/userInfo', async (req, res) => {
   return res.status(500).json(orders);
 });
 
-app.post('/lastUser', async (req, res) => {
-  const {chatId} = req.body
-  const orders = await getLastAddedOrderForUser(chatId)
-  return res.status(500).json(orders);
-});
 
 
 // Start the Express server
