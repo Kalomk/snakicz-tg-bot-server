@@ -88,4 +88,4 @@ app.post('/userInfo', async (req, res) => {
 
 // Start the Express server
 const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => console.log(`Server started on PORT ${PORT}`));
+app.listen(PORT, () => console.log(`Server started on PORT: ${PORT}`));
