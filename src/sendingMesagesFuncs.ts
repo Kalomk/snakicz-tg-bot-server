@@ -3,7 +3,6 @@ import { group_chat, group_chat_for_payment } from '..';
 import { bot } from '..';
 import { getLastAddedOrderForUser } from './controllers/controller';
 
-
 interface SendingMessageTypes {
   chatId: number;
   userId: number;
@@ -38,7 +37,7 @@ export function SM_confrimOrder({
         [
           {
             text: 'А-банк (курс 9)',
-            callback_data: JSON.stringify({ confirm: 'privat', chat_id: chatId }),
+            callback_data: JSON.stringify({ confirm: 'ukr-bank', chat_id: chatId }),
           },
         ],
         [
@@ -69,7 +68,7 @@ export function SM_confrimOrder({
 export function SM_sendPaymentMessage(chatId: number, type: string) {
   function checkType(type: string) {
     switch (type) {
-      case 'privat':
+      case 'ukr-bank':
         return 'Номер картки: 4323357029261688\nПІБ отримувача: Демементьєва Анастасія\nКурс: 9\nСума: сума в злотих помножена на 9';
       case 'polish_bank':
         return 'Номер рахунку:\n18160014621731022840000001\nOтримувач: Snakicz\nБанк отримувача: BNP Paribas Tytuł: oplata zamówienia';
@@ -90,15 +89,12 @@ export function SM_sendPaymentMessage(chatId: number, type: string) {
   });
 }
 
-export function SM_requestUserPhoto(
-  chat_id: number,
-) {
+export function SM_requestUserPhoto(chat_id: number) {
   bot.sendMessage(chat_id, 'Вишліть фотопідтвердження оплати,прикріпивши фото знизу 👇');
   // Listen for messages from the user
   bot.once('photo', async (msg) => {
     const chatId = msg.chat.id;
-    const orderNumber = await getLastAddedOrderForUser(chatId).then(order => order?.orderNumber)
-
+    const orderNumber = await getLastAddedOrderForUser(chatId).then((order) => order?.orderNumber);
 
     if (msg.photo && msg.photo.length > 0) {
       // The `msg.photo` property is an array of photo sizes
@@ -176,7 +172,7 @@ export function SM_userDeclineOrder({
   });
 }
 
-export function SM_userAcceptOrder(bot: TelegramBot, groupId:string, orderNumberFromText: string) {
+export function SM_userAcceptOrder(bot: TelegramBot, groupId: string, orderNumberFromText: string) {
   bot.sendMessage(groupId, `Замовлення ${orderNumberFromText} продовжено`);
 }
 

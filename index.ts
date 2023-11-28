@@ -2,10 +2,11 @@ import TelegramBot from 'node-telegram-bot-api';
 import express from 'express';
 import * as dotenv from 'dotenv';
 import { UT_sendKeyboardMessage } from './src/utils';
-import { EH_contactHandler, EH_onCallbackQuery, EH_webDataHandler } from './src/eventHandlers';
+import { EH_contactHandler, EH_onCallbackQuery } from './src/eventHandlers';
+import { webDataHandler } from './src/webDataHandler';
 import { PrismaClient } from '@prisma/client';
 import { getLastAddedOrderForUser, getOrders } from './src/controllers/controller';
-import cors from 'cors'
+import cors from 'cors';
 
 dotenv.config();
 
@@ -24,15 +25,13 @@ export const prisma = new PrismaClient();
 app.use(express.json());
 app.use(cors());
 
-
 // Create Telegram Bot
 export const bot: TelegramBot = new TelegramBot(_token, { polling: true });
 bot.on('polling_error', console.log);
 
 // Function to handle the /start command
 function handleStartCommand(msg: TelegramBot.Message) {
-  bot.removeAllListeners();
-  prisma.$connect()
+  bot.removeListener('contact', EH_contactHandler);
 
   const chatId = msg.chat.id;
 
@@ -42,14 +41,11 @@ function handleStartCommand(msg: TelegramBot.Message) {
 
   UT_sendKeyboardMessage(bot, chatId, startMessage, contactKeyboard);
 
-  bot.once('contact', (msg) => EH_contactHandler(msg));
-
-  bot.on('web_app_data', (msg) => EH_webDataHandler(msg));
-
-  bot.on('callback_query', (callbackQuery) =>
-    EH_onCallbackQuery(callbackQuery,group_chat)
-  );
+  bot.once('contact', EH_contactHandler);
 }
+
+//events
+bot.on('callback_query', (callbackQuery) => EH_onCallbackQuery(callbackQuery, group_chat));
 
 // Command handlers
 bot.onText(/\/echo (.+)/, (msg, match) => {
@@ -77,15 +73,20 @@ bot.onText(/\/restart/, (msg) => {
 //routes
 
 app.post('/userInfo', async (req, res) => {
-  const {chatId} = req.body
-
-  console.log('fetch')
-  const orders = await  getOrders(chatId)
-  return res.status(500).json(orders);
+  const { chatId } = req.body;
+  const orders = await getOrders(chatId);
+  return res.json(orders);
 });
 
+app.post('/lastOrder', async (req, res) => {
+  const { chatId } = req.body;
+  const orders = await getLastAddedOrderForUser(chatId);
+  return res.json(orders);
+});
 
-
+app.post('/webData', async (req, _) => {
+  webDataHandler(req.body);
+});
 // Start the Express server
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => console.log(`Server started on PORT: ${PORT}`));
