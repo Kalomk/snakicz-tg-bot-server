@@ -29,7 +29,7 @@ const createOrFindExistUser = async ({
 }): Promise<
   | {
       id: number;
-      chatId: number;
+      chatId: string;
       phoneNumber: string;
       isFirstTimeBuy: boolean;
       ordersCount: number;
@@ -41,7 +41,7 @@ const createOrFindExistUser = async ({
   try {
     const user = await prisma.user.findUnique({
       where: {
-        chatId,
+        chatId: chatId.toString(),
       },
     });
 
@@ -49,7 +49,7 @@ const createOrFindExistUser = async ({
 
     return prisma.user.create({
       data: {
-        chatId,
+        chatId: chatId.toString(),
         phoneNumber,
       },
     });
@@ -63,7 +63,7 @@ const createOrder = async ({ chatId, orderData }: { chatId: number; orderData: O
   try {
     // Find the user by chatId
     const user = await prisma.user.findUnique({
-      where: { chatId },
+      where: { chatId: chatId.toString() },
     });
 
     if (!user) {
@@ -116,21 +116,19 @@ const createOrder = async ({ chatId, orderData }: { chatId: number; orderData: O
 const getLastAddedOrderForUser = async (chatId: number) => {
   try {
     const user = await prisma.user.findUnique({
-      where: { chatId },
+      where: { chatId: chatId.toString() },
     });
 
-    if (user) {
-      const order = await prisma.order.findFirst({
-        where: { userId: user.chatId },
-        orderBy: { createdAt: 'desc' } as any,
-      });
-      if (order) {
-        return order;
-      }
-      return [] as unknown as OrderType;
+    if (!user) {
+      throw new Error(`User with chatId ${chatId} not found.`);
     }
 
-    return [] as unknown as OrderType;
+    const order = await prisma.order.findFirst({
+      where: { userId: user.chatId },
+      orderBy: { createdAt: 'desc' } as any,
+    });
+
+    return order;
   } catch (error) {
     console.error('Error fetching last added order for user:', error);
     throw error;
@@ -141,7 +139,7 @@ const getLastAddedOrderForUser = async (chatId: number) => {
 const getOrders = async (chatId: number) => {
   try {
     const orders = await prisma.order.findMany({
-      where: { userId: chatId },
+      where: { userId: chatId.toString() },
     });
     return orders;
   } catch (error) {
