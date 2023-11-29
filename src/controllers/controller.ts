@@ -24,7 +24,7 @@ const createOrFindExistUser = async ({
   chatId,
   phoneNumber,
 }: {
-  chatId: number;
+  chatId: string;
   phoneNumber: string;
 }): Promise<
   | {

@@ -19,7 +19,7 @@ export async function EH_contactHandler(msg: TelegramBot.Message) {
   // Generate a random number between 1000 and 9999
   const phoneNumber = msg?.contact?.phone_number!;
 
-  await createOrFindExistUser({ chatId: chatId, phoneNumber }).then((user) => {
+  await createOrFindExistUser({ chatId: chatId.toString(), phoneNumber }).then((user) => {
     const isFirstTimeBuy = user?.isFirstTimeBuy;
 
     const webUrl = isFirstTimeBuy ? webAppUrl + '/priceSelect' : webAppUrl;

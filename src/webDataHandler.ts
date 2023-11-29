@@ -44,7 +44,7 @@ export async function webDataHandler(requestedData: FormData) {
 
   // Find the user by chatId
   const user = await prisma.user.findUnique({
-    where: { chatId: chatId },
+    where: { chatId: chatId.toString() },
   });
 
   if (user) {
