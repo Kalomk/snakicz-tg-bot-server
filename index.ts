@@ -87,6 +87,10 @@ app.post('/lastOrder', async (req, res) => {
 app.post('/webData', async (req, _) => {
   webDataHandler(req.body);
 });
+
+app.get('/webData', async (req, _) => {
+  console.log('hello');
+});
 // Start the Express server
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => console.log(`Server started on PORT: ${PORT}`));
