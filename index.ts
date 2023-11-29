@@ -91,6 +91,10 @@ app.post('/webData', async (req, _) => {
 app.get('/', async (req, res) => {
   res.send('Hello world');
 });
+
+app.get('/open', async (req, res) => {
+  return res.json({ data: '2314324324' });
+});
 // Start the Express server
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => console.log(`Server started on PORT: ${PORT}`));
