@@ -89,7 +89,7 @@ app.post('/', async (req, _) => {
 });
 
 app.get('/webData', async (req, _) => {
-  console.log('hello');
+  return { data: '134325345643' };
 });
 // Start the Express server
 const PORT = process.env.PORT || 8000;
