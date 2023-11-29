@@ -88,8 +88,8 @@ app.post('/', async (req, _) => {
   webDataHandler(req.body);
 });
 
-app.get('/webData', async (req, _) => {
-  return { data: '134325345643' };
+app.get('/webData', async (req, res) => {
+  res.send('Hello world');
 });
 // Start the Express server
 const PORT = process.env.PORT || 8000;
