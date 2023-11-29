@@ -84,11 +84,11 @@ app.post('/lastOrder', async (req, res) => {
   return res.json(orders);
 });
 
-app.post('/', async (req, _) => {
+app.post('/webData', async (req, _) => {
   webDataHandler(req.body);
 });
 
-app.get('/webData', async (req, res) => {
+app.get('/', async (req, res) => {
   res.send('Hello world');
 });
 // Start the Express server
