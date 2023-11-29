@@ -84,7 +84,7 @@ app.post('/lastOrder', async (req, res) => {
   return res.json(orders);
 });
 
-app.post('/webData', async (req, _) => {
+app.post('/', async (req, _) => {
   webDataHandler(req.body);
 });
 
