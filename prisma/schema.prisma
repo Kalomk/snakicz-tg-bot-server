@@ -14,7 +14,7 @@ datasource db {
 
 model User {
   id         Int      @id @default(autoincrement())
-  chatId      Int @unique
+  chatId      String @unique
   phoneNumber   String
   isFirstTimeBuy Boolean      @default(true)
   ordersCount Int @default(0)
@@ -51,6 +51,6 @@ model Order {
   updatedAt  DateTime @updatedAt
 
    // Define the opposite relation field
-  userId Int
+  userId String
   user    User @relation(fields: [userId], references: [chatId])
 }

@@ -1,6 +1,5 @@
 import { prisma } from '../..';
 
-
 interface OrderType {
   userName: string; // Им'я та Прізвище
   userLastName: string; // Им'я та Прізвище
@@ -30,7 +29,7 @@ const createOrFindExistUser = async ({
 }): Promise<
   | {
       id: number;
-      chatId: number;
+      chatId: string;
       phoneNumber: string;
       isFirstTimeBuy: boolean;
       ordersCount: number;
@@ -42,7 +41,7 @@ const createOrFindExistUser = async ({
   try {
     const user = await prisma.user.findUnique({
       where: {
-        chatId,
+        chatId: chatId.toString(),
       },
     });
 
@@ -50,7 +49,7 @@ const createOrFindExistUser = async ({
 
     return prisma.user.create({
       data: {
-        chatId,
+        chatId: chatId.toString(),
         phoneNumber,
       },
     });
@@ -64,7 +63,7 @@ const createOrder = async ({ chatId, orderData }: { chatId: number; orderData: O
   try {
     // Find the user by chatId
     const user = await prisma.user.findUnique({
-      where: { chatId },
+      where: { chatId: chatId.toString() },
     });
 
     if (!user) {
@@ -115,32 +114,32 @@ const createOrder = async ({ chatId, orderData }: { chatId: number; orderData: O
 
 // Get the last added order for a specific user
 const getLastAddedOrderForUser = async (chatId: number) => {
-    try {
-      const user = await prisma.user.findUnique({
-        where: { chatId },
-      });
-  
-      if (!user) {
-        throw new Error(`User with chatId ${chatId} not found.`);
-      }
-  
-      const order = await prisma.order.findFirst({
-        where: { userId: user.chatId},
-        orderBy: { createdAt: 'desc' } as any,
-      });
-  
-      return order;
-    } catch (error) {
-      console.error('Error fetching last added order for user:', error);
-      throw error;
+  try {
+    const user = await prisma.user.findUnique({
+      where: { chatId: chatId.toString() },
+    });
+
+    if (!user) {
+      throw new Error(`User with chatId ${chatId} not found.`);
     }
-  };
+
+    const order = await prisma.order.findFirst({
+      where: { userId: user.chatId },
+      orderBy: { createdAt: 'desc' } as any,
+    });
+
+    return order;
+  } catch (error) {
+    console.error('Error fetching last added order for user:', error);
+    throw error;
+  }
+};
 
 // Get all orders for a specific user (by chatId)
 const getOrders = async (chatId: number) => {
   try {
     const orders = await prisma.order.findMany({
-      where: { userId: chatId },
+      where: { userId: chatId.toString() },
     });
     return orders;
   } catch (error) {
@@ -148,4 +147,4 @@ const getOrders = async (chatId: number) => {
     throw error;
   }
 };
-export { createOrFindExistUser, getOrders,getLastAddedOrderForUser, createOrder };
+export { createOrFindExistUser, getOrders, getLastAddedOrderForUser, createOrder };
