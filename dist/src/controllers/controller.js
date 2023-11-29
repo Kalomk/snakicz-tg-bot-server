@@ -2,19 +2,18 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createOrder = exports.getLastAddedOrderForUser = exports.getOrders = exports.createOrFindExistUser = void 0;
 const __1 = require("../..");
-const client_1 = require("@prisma/client");
 const createOrFindExistUser = async ({ chatId, phoneNumber, }) => {
     try {
         const user = await __1.prisma.user.findUnique({
             where: {
-                chatId,
+                chatId: chatId.toString(),
             },
         });
         if (user)
             return user;
         return __1.prisma.user.create({
             data: {
-                chatId,
+                chatId: chatId.toString(),
                 phoneNumber,
             },
         });
@@ -29,7 +28,7 @@ const createOrder = async ({ chatId, orderData }) => {
     try {
         // Find the user by chatId
         const user = await __1.prisma.user.findUnique({
-            where: { chatId },
+            where: { chatId: chatId },
         });
         if (!user) {
             throw new Error(`User with chatId ${chatId} not found.`);
@@ -78,14 +77,14 @@ exports.createOrder = createOrder;
 const getLastAddedOrderForUser = async (chatId) => {
     try {
         const user = await __1.prisma.user.findUnique({
-            where: { chatId },
+            where: { chatId: chatId.toString() },
         });
         if (!user) {
             throw new Error(`User with chatId ${chatId} not found.`);
         }
         const order = await __1.prisma.order.findFirst({
             where: { userId: user.chatId },
-            orderBy: { createdAt: client_1.Prisma.SortOrder.desc },
+            orderBy: { createdAt: 'desc' },
         });
         return order;
     }
@@ -99,7 +98,7 @@ exports.getLastAddedOrderForUser = getLastAddedOrderForUser;
 const getOrders = async (chatId) => {
     try {
         const orders = await __1.prisma.order.findMany({
-            where: { userId: chatId },
+            where: { userId: chatId.toString() },
         });
         return orders;
     }

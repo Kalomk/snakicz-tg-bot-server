@@ -24,7 +24,7 @@ const createOrFindExistUser = async ({
   chatId,
   phoneNumber,
 }: {
-  chatId: number;
+  chatId: string;
   phoneNumber: string;
 }): Promise<
   | {
@@ -59,11 +59,11 @@ const createOrFindExistUser = async ({
 };
 
 // Controller function to create a new order associated with a user
-const createOrder = async ({ chatId, orderData }: { chatId: number; orderData: OrderType }) => {
+const createOrder = async ({ chatId, orderData }: { chatId: string; orderData: OrderType }) => {
   try {
     // Find the user by chatId
     const user = await prisma.user.findUnique({
-      where: { chatId: chatId.toString() },
+      where: { chatId: chatId },
     });
 
     if (!user) {

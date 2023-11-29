@@ -12,7 +12,7 @@ async function EH_webDataHandler(msg) {
         const userName = msg.chat.username;
         // Find the user by chatId
         const user = await __1.prisma.user.findUnique({
-            where: { chatId: chatId },
+            where: { chatId: chatId.toString() },
         });
         if (user) {
             const userOrderCount = user?.ordersCount;
@@ -124,7 +124,7 @@ async function EH_webDataHandler(msg) {
                     }, 2000);
                 }
                 (0, controller_1.createOrder)({
-                    chatId: chatId,
+                    chatId: chatId.toString(),
                     orderData: {
                         orderNumber: JSON.stringify(orderNumber),
                         contactPhoneNumber: userPhoneNumber,
@@ -167,7 +167,7 @@ async function EH_contactHandler(msg) {
     const chatId = msg.chat.id;
     // Generate a random number between 1000 and 9999
     const phoneNumber = msg?.contact?.phone_number;
-    await (0, controller_1.createOrFindExistUser)({ chatId: chatId, phoneNumber }).then((user) => {
+    await (0, controller_1.createOrFindExistUser)({ chatId: chatId.toString(), phoneNumber }).then((user) => {
         const isFirstTimeBuy = user?.isFirstTimeBuy;
         const storeKeyboard = [[{ text: 'Магазин', web_app: { url: __1.webAppUrl } }]];
         const thankYouMessage = "Дякуємо за контакти. Для продовження натисніть 'Магазин'";

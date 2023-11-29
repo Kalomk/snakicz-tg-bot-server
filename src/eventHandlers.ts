@@ -156,7 +156,7 @@ export async function EH_webDataHandler(msg: TelegramBot.Message) {
           }, 2000);
         }
         createOrder({
-          chatId: chatId,
+          chatId: chatId.toString(),
           orderData: {
             orderNumber: JSON.stringify(orderNumber),
             contactPhoneNumber: userPhoneNumber,
@@ -201,7 +201,7 @@ export async function EH_contactHandler(msg: TelegramBot.Message) {
   // Generate a random number between 1000 and 9999
   const phoneNumber = msg?.contact?.phone_number!;
 
-  await createOrFindExistUser({ chatId: chatId, phoneNumber }).then((user) => {
+  await createOrFindExistUser({ chatId: chatId.toString(), phoneNumber }).then((user) => {
     const isFirstTimeBuy = user?.isFirstTimeBuy;
 
     const storeKeyboard = [[{ text: 'Магазин', web_app: { url: webAppUrl } }]];

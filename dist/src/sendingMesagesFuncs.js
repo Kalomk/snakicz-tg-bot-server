@@ -19,7 +19,7 @@ function SM_confrimOrder({ chatId, userId, text, messageId, keyboards, }) {
             inline_keyboard: [
                 [
                     {
-                        text: 'ПриватБанк (курс 8.8)',
+                        text: 'А-банк (курс 9)',
                         callback_data: JSON.stringify({ confirm: 'privat', chat_id: chatId }),
                     },
                 ],
@@ -46,9 +46,9 @@ function SM_sendPaymentMessage(chatId, type) {
     function checkType(type) {
         switch (type) {
             case 'privat':
-                return 'Номер картки: 5363542019838953\nПІБ отримувача: Демементьєва Анастасія\nКурс: 8.8\nСума: сума в злотих помножена на 8.8';
+                return 'Номер картки: 4323357029261688\nПІБ отримувача: Демементьєва Анастасія\nКурс: 9\nСума: сума в злотих помножена на 9';
             case 'polish_bank':
-                return 'Номер рахунку:\n61160014621804889540000001\nПІБ отримувача: Roman Lehchonok\nБанк отримувача: BNP Paribas';
+                return 'Номер рахунку:\n18160014621731022840000001\nOтримувач: Snakicz\nБанк отримувача: BNP Paribas Tytuł: oplata zamówienia';
         }
     }
     __2.bot.sendMessage(chatId, `${checkType(type)}`, {

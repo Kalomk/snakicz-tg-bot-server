@@ -88,12 +88,7 @@ app.post('/userInfo', async (req, res) => {
     const orders = await (0, controller_1.getOrders)(chatId);
     return res.status(500).json(orders);
 });
-app.post('/lastUser', async (req, res) => {
-    const { chatId } = req.body;
-    const orders = await (0, controller_1.getLastAddedOrderForUser)(chatId);
-    return res.status(500).json(orders);
-});
 // Start the Express server
 const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => console.log(`Server started on PORT ${PORT}`));
+app.listen(PORT, () => console.log(`Server started on PORT: ${PORT}`));
 //# sourceMappingURL=index.js.map
