@@ -37,7 +37,7 @@ export function SM_confrimOrder({
       inline_keyboard: [
         [
           {
-            text: 'А-банк (курс 9)',
+            text: 'А-банк (курс 9)(в гривнях)',
             callback_data: JSON.stringify({ confirm: 'privat', chat_id: chatId }),
           },
         ],

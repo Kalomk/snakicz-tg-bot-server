@@ -204,7 +204,9 @@ export async function EH_contactHandler(msg: TelegramBot.Message) {
   await createOrFindExistUser({ chatId: chatId.toString(), phoneNumber }).then((user) => {
     const isFirstTimeBuy = user?.isFirstTimeBuy;
 
-    const storeKeyboard = [[{ text: 'Магазин', web_app: { url: webAppUrl } }]];
+    const correctWebUrl = isFirstTimeBuy ? webAppUrl + '/priceSelect' : webAppUrl;
+
+    const storeKeyboard = [[{ text: 'Магазин', web_app: { url: correctWebUrl } }]];
     const thankYouMessage = "Дякуємо за контакти. Для продовження натисніть 'Магазин'";
 
     UT_sendKeyboardMessage(bot, chatId, thankYouMessage, storeKeyboard);

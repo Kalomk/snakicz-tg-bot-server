@@ -169,7 +169,8 @@ async function EH_contactHandler(msg) {
     const phoneNumber = msg?.contact?.phone_number;
     await (0, controller_1.createOrFindExistUser)({ chatId: chatId.toString(), phoneNumber }).then((user) => {
         const isFirstTimeBuy = user?.isFirstTimeBuy;
-        const storeKeyboard = [[{ text: 'Магазин', web_app: { url: __1.webAppUrl } }]];
+        const correctWebUrl = isFirstTimeBuy ? __1.webAppUrl + '/priceSelect' : __1.webAppUrl;
+        const storeKeyboard = [[{ text: 'Магазин', web_app: { url: correctWebUrl } }]];
         const thankYouMessage = "Дякуємо за контакти. Для продовження натисніть 'Магазин'";
         (0, utils_1.UT_sendKeyboardMessage)(__2.bot, chatId, thankYouMessage, storeKeyboard);
         // bot.sendMessage(chatId, 'Заходи в наш интернет магазин по кнопке ниже', {

@@ -19,7 +19,7 @@ function SM_confrimOrder({ chatId, userId, text, messageId, keyboards, }) {
             inline_keyboard: [
                 [
                     {
-                        text: 'А-банк (курс 9)',
+                        text: 'А-банк (курс 9)(в гривнях)',
                         callback_data: JSON.stringify({ confirm: 'privat', chat_id: chatId }),
                     },
                 ],
