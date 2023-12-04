@@ -58,6 +58,41 @@ const createOrFindExistUser = async ({
   }
 };
 
+const getAllUsers = () => {
+  try {
+    return prisma.user.findMany();
+  } catch (e) {
+    console.log(e);
+    return [];
+  }
+};
+const userDelete = (chatId: string) => {
+  try {
+    return prisma.user.delete({ where: { chatId } });
+  } catch (e) {
+    console.log(e);
+    return [];
+  }
+};
+
+const getAllOrders = async () => {
+  try {
+    return await prisma.order.findMany();
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    throw error;
+  }
+};
+
+const orderDelete = (orderNumber: string) => {
+  try {
+    return prisma.order.delete({ where: { orderNumber } });
+  } catch (e) {
+    console.log(e);
+    return [];
+  }
+};
+
 // Controller function to create a new order associated with a user
 const createOrder = async ({ chatId, orderData }: { chatId: number; orderData: OrderType }) => {
   try {
@@ -136,7 +171,7 @@ const getLastAddedOrderForUser = async (chatId: number) => {
 };
 
 // Get all orders for a specific user (by chatId)
-const getOrders = async (chatId: number) => {
+const getOrdersByUserId = async (chatId: number) => {
   try {
     const orders = await prisma.order.findMany({
       where: { userId: chatId.toString() },
@@ -147,4 +182,13 @@ const getOrders = async (chatId: number) => {
     throw error;
   }
 };
-export { createOrFindExistUser, getOrders, getLastAddedOrderForUser, createOrder };
+export {
+  createOrFindExistUser,
+  getOrdersByUserId,
+  getAllOrders,
+  getAllUsers,
+  orderDelete,
+  userDelete,
+  getLastAddedOrderForUser,
+  createOrder,
+};

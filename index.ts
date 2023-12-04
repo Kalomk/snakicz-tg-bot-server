@@ -5,7 +5,14 @@ import { UT_sendKeyboardMessage } from './src/utils';
 import { EH_contactHandler, EH_onCallbackQuery } from './src/eventHandlers';
 import { webDataHandler } from './src/webDataHandler';
 import { PrismaClient } from '@prisma/client';
-import { getLastAddedOrderForUser, getOrders } from './src/controllers/controller';
+import {
+  getAllOrders,
+  getAllUsers,
+  getLastAddedOrderForUser,
+  getOrdersByUserId,
+  orderDelete,
+  userDelete,
+} from './src/controllers/controller';
 import cors from 'cors';
 
 dotenv.config();
@@ -74,7 +81,7 @@ bot.onText(/\/restart/, (msg) => {
 
 app.post('/userInfo', async (req, res) => {
   const { chatId } = req.body;
-  const orders = await getOrders(chatId);
+  const orders = await getOrdersByUserId(chatId);
   return res.json(orders);
 });
 
@@ -88,12 +95,26 @@ app.post('/webData', async (req, _) => {
   webDataHandler(req.body);
 });
 
-app.get('/', async (req, res) => {
-  res.send('Hello world');
+app.get('/getAllUsers', async (_, res) => {
+  const users = await getAllUsers();
+  return res.json(users);
 });
 
-app.get('/open', async (req, res) => {
-  res.send('Open');
+app.delete('/userDelete', async (req, _) => {
+  const { chatId } = req.body;
+  userDelete(chatId);
+});
+
+app.get('/getAllOrders', async (_, res) => {
+  const orders = await getAllOrders();
+
+  return res.json(orders);
+});
+
+app.delete('/orderDelete', async (req, _) => {
+  const { orderNumber } = req.body;
+
+  orderDelete(orderNumber);
 });
 
 // Start the Express server
