@@ -137,8 +137,9 @@ export async function EH_webDataHandler(msg: TelegramBot.Message) {
           await bot.sendMessage(group_chat, prodMessage, option);
         }
         async function sendMessages() {
-          const messagesToSend = [
-            `Ваша адреса: ${userAddress || addressPack}`,
+          const messagesToSend: string[] = [
+            (data?.addressPack && `Адреса пачкомату:${data?.addressPack}`) ||
+              (data?.userAddress && `Ваша адреса: ${data?.userAddress}`),
             `Cума замовлення: ${calcTotalPrice} ${activePrice}`,
             `Вага замовлення: ${totalWeight} грам`,
             `Номер замовлення: ${orderNumber}`,
@@ -281,7 +282,7 @@ export async function EH_onCallbackQuery(
       });
       break;
     case 'accept':
-      SM_userAcceptOrder(bot, group_id, orderNumberFromText!);
+      SM_userAcceptOrder(bot, group_id, orderNumberFromText!, chatId, messageId);
       break;
     case 'decline':
       SM_userDeclineOrder({

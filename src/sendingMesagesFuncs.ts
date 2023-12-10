@@ -3,7 +3,6 @@ import { group_chat, group_chat_for_payment } from '..';
 import { bot } from '..';
 import { getLastAddedOrderForUser } from './controllers/controller';
 
-
 interface SendingMessageTypes {
   chatId: number;
   userId: number;
@@ -90,15 +89,12 @@ export function SM_sendPaymentMessage(chatId: number, type: string) {
   });
 }
 
-export function SM_requestUserPhoto(
-  chat_id: number,
-) {
+export function SM_requestUserPhoto(chat_id: number) {
   bot.sendMessage(chat_id, 'Вишліть фотопідтвердження оплати,прикріпивши фото знизу 👇');
   // Listen for messages from the user
   bot.once('photo', async (msg) => {
     const chatId = msg.chat.id;
-    const orderNumber = await getLastAddedOrderForUser(chatId).then(order => order?.orderNumber)
-
+    const orderNumber = await getLastAddedOrderForUser(chatId).then((order) => order?.orderNumber);
 
     if (msg.photo && msg.photo.length > 0) {
       // The `msg.photo` property is an array of photo sizes
@@ -176,8 +172,18 @@ export function SM_userDeclineOrder({
   });
 }
 
-export function SM_userAcceptOrder(bot: TelegramBot, groupId:string, orderNumberFromText: string) {
+export function SM_userAcceptOrder(
+  bot: TelegramBot,
+  groupId: string,
+  orderNumberFromText: string,
+  chatId: number,
+  messageId: number
+) {
   bot.sendMessage(groupId, `Замовлення ${orderNumberFromText} продовжено`);
+  bot.editMessageText(`Ваше замовлення ${orderNumberFromText} продовжено`, {
+    chat_id: chatId,
+    message_id: messageId,
+  });
 }
 
 export function SM_actualizeInfo({
