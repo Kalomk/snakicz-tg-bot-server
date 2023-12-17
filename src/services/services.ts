@@ -39,7 +39,6 @@ export type UserOrderStatus =
   | 'isActualize';
 
 export interface ProductType {
-  id: number;
   title: string;
   price: { zł: number[]; '€': number[] };
   img: string;
@@ -48,7 +47,6 @@ export interface ProductType {
   totalProductWeight: number;
   isEnable: boolean;
   category: number;
-  totalWeightProduct: number;
   totalProductWeightFromProducts: { [id: number]: number };
 }
 

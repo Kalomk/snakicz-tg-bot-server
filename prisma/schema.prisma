@@ -78,9 +78,8 @@ model Product {
   img String
   weight Int[] 
   description String?
-  totalProductWeight Int
   isEnable Boolean
   category Int
   totalWeightProduct Int?
-  totalProductWeightFromProducts Json
+  totalProductWeightFromProducts Json?
 }
