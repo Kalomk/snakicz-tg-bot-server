@@ -3,6 +3,7 @@ import { prisma } from '../..';
 interface OrderType {
   userName: string; // Им'я та Прізвище
   userLastName: string; // Им'я та Прізвище
+  userCountry: string;
   addressPack: string; // Адреса-Пачкомату
   userAddress: string; // Адреса-покупця
   userCity: string; // Місто
@@ -18,18 +19,49 @@ interface OrderType {
   email: string; // Емейл
   totalWeight: number; // Вага замовлення
   orderItems: string;
+  price: number;
+
+  paymentConfirmPicUrl?: string;
+  catExistConfirmPicUrl?: string;
+
+  op_isConfirmationOrderSended?: boolean;
+  op_isConfirmationPaymentSended?: boolean;
+  op_isPacNumberSended?: boolean;
+  op_isActualize?: boolean;
+
+  orderComeFrom?: 'telegram' | 'instagram' | 'tikTok' | 'fb' | 'web';
+}
+
+export type UserOrderStatus =
+  | 'isConfirmationOrderSended'
+  | 'isConfirmationPaymentSended'
+  | 'isPacNumberSended'
+  | 'isActualize';
+
+export interface ProductType {
+  id: number;
+  title: string;
+  price: { zł: number[]; '€': number[] };
+  img: string;
+  weight: number[];
+  description?: string;
+  totalProductWeight: number;
+  isEnable: boolean;
+  category: number;
+  totalWeightProduct: number;
+  totalProductWeightFromProducts: { [id: number]: number };
 }
 
 const createOrFindExistUser = async ({
-  chatId,
+  uniqueId,
   phoneNumber,
 }: {
-  chatId: string;
+  uniqueId: string;
   phoneNumber: string;
 }): Promise<
   | {
       id: number;
-      chatId: string;
+      uniqueId: string;
       phoneNumber: string;
       isFirstTimeBuy: boolean;
       ordersCount: number;
@@ -41,7 +73,7 @@ const createOrFindExistUser = async ({
   try {
     const user = await prisma.user.findUnique({
       where: {
-        chatId: chatId.toString(),
+        uniqueId: uniqueId.toString(),
       },
     });
 
@@ -49,7 +81,7 @@ const createOrFindExistUser = async ({
 
     return prisma.user.create({
       data: {
-        chatId: chatId.toString(),
+        uniqueId: uniqueId.toString(),
         phoneNumber,
       },
     });
@@ -66,9 +98,9 @@ const getAllUsers = () => {
     return [];
   }
 };
-const userDelete = (chatId: string) => {
+const userDelete = (uniqueId: string) => {
   try {
-    return prisma.user.delete({ where: { chatId } });
+    return prisma.user.delete({ where: { uniqueId } });
   } catch (e) {
     console.log(e);
     return [];
@@ -94,21 +126,21 @@ const orderDelete = (orderNumber: string) => {
 };
 
 // Controller function to create a new order associated with a user
-const createOrder = async ({ chatId, orderData }: { chatId: number; orderData: OrderType }) => {
+const createOrder = async ({ uniqueId, orderData }: { uniqueId: number; orderData: OrderType }) => {
   try {
-    // Find the user by chatId
+    // Find the user by uniqueId
     const user = await prisma.user.findUnique({
-      where: { chatId: chatId.toString() },
+      where: { uniqueId: uniqueId.toString() },
     });
 
     if (!user) {
-      throw new Error(`User with chatId ${chatId} not found.`);
+      throw new Error(`User with uniqueId ${uniqueId} not found.`);
     }
 
     // Create a new order associated with the user
     const newOrder = await prisma.order.create({
       data: {
-        userId: user.chatId,
+        userId: user.uniqueId,
         ...orderData,
       },
     });
@@ -120,11 +152,11 @@ const createOrder = async ({ chatId, orderData }: { chatId: number; orderData: O
   }
 };
 
-// // Update a user by chatId
-// const updateUser = async ({ chatId, data }) => {
+// // Update a user by uniqueId
+// const updateUser = async ({ uniqueId, data }) => {
 //   try {
 //     const updatedUser = await prisma.user.update({
-//       where: { chatId },
+//       where: { uniqueId },
 //       data,
 //     });
 //     return updatedUser;
@@ -148,18 +180,18 @@ const createOrder = async ({ chatId, orderData }: { chatId: number; orderData: O
 // };
 
 // Get the last added order for a specific user
-const getLastAddedOrderForUser = async (chatId: number) => {
+const getLastAddedOrderForUser = async (uniqueId: number) => {
   try {
     const user = await prisma.user.findUnique({
-      where: { chatId: chatId.toString() },
+      where: { uniqueId: uniqueId.toString() },
     });
 
     if (!user) {
-      throw new Error(`User with chatId ${chatId} not found.`);
+      throw new Error(`User with uniqueId ${uniqueId} not found.`);
     }
 
     const order = await prisma.order.findFirst({
-      where: { userId: user.chatId },
+      where: { userId: user.uniqueId },
       orderBy: { createdAt: 'desc' } as any,
     });
 
@@ -170,11 +202,11 @@ const getLastAddedOrderForUser = async (chatId: number) => {
   }
 };
 
-// Get all orders for a specific user (by chatId)
-const getOrdersByUserId = async (chatId: number) => {
+// Get all orders for a specific user (by uniqueId)
+const getOrdersByUserId = async (uniqueId: number) => {
   try {
     const orders = await prisma.order.findMany({
-      where: { userId: chatId.toString() },
+      where: { userId: uniqueId.toString() },
     });
     return orders;
   } catch (error) {
@@ -182,6 +214,47 @@ const getOrdersByUserId = async (chatId: number) => {
     throw error;
   }
 };
+
+const createANewProduct = async (newProduct: ProductType) => {
+  try {
+    await prisma.product.create({
+      data: {
+        ...newProduct,
+      },
+    });
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+const updateProduct = async (id: number, newData: ProductType) => {
+  try {
+    await prisma.product.update({
+      where: {
+        id,
+      },
+      data: {
+        ...newData,
+      },
+    });
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+const updateUserOrderStatus = async (orderNumber: string, status: UserOrderStatus) => {
+  try {
+    await prisma.order.update({
+      where: { orderNumber },
+      data: {
+        [`op_${status}`]: true,
+      },
+    });
+  } catch (e) {
+    console.log(e);
+  }
+};
+
 export {
   createOrFindExistUser,
   getOrdersByUserId,
@@ -191,4 +264,7 @@ export {
   userDelete,
   getLastAddedOrderForUser,
   createOrder,
+  createANewProduct,
+  updateUserOrderStatus,
+  updateProduct,
 };

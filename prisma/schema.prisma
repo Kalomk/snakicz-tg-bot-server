@@ -14,7 +14,7 @@ datasource db {
 
 model User {
   id         Int      @id @default(autoincrement())
-  chatId      String @unique
+  uniqueId      String @unique
   phoneNumber   String
   isFirstTimeBuy Boolean      @default(true)
   ordersCount Int @default(0)
@@ -30,6 +30,7 @@ model Order {
   id                Int       @id @default(autoincrement())
   userName          String    // Им'я та Прізвище
   userLastName      String    // Им'я та Прізвище
+  userCountry       String    // країна
   addressPack       String?   // Адреса-Пачкомату
   userAddress       String?   // Адреса-покупця
   userCity          String?   // Місто
@@ -46,11 +47,40 @@ model Order {
   totalWeight       Float     // Вага замовлення
   orderItems        Json      // JSON array of order items
   isStatisted       Boolean     @default(false)
+  price             Float
 
+  paymentConfirmPicUrl String   @default("")
+  catExistConfirmPicUrl String   @default("")
+
+
+
+  op_isConfirmationOrderSended Boolean @default(false)
+  op_isConfirmationPaymentSended Boolean @default(false)
+  op_isPacNumberSended Boolean @default(false)
+  op_isActualize Boolean @default(false)
+
+
+  orderComeFrom     String  @default("telegram")
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
+
+
    // Define the opposite relation field
   userId String
-  user    User @relation(fields: [userId], references: [chatId])
+  user    User @relation(fields: [userId], references: [uniqueId])
+}
+
+model Product {
+  id Int     @id @default(autoincrement()) 
+  title String
+  price Json
+  img String
+  weight Int[] 
+  description String?
+  totalProductWeight Int
+  isEnable Boolean
+  category Int
+  totalWeightProduct Int?
+  totalProductWeightFromProducts Json
 }

@@ -1,7 +1,7 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { group_chat, group_chat_for_payment } from '..';
 import { bot } from '..';
-import { getLastAddedOrderForUser } from './controllers/controller';
+import { getLastAddedOrderForUser } from './services/services';
 
 interface SendingMessageTypes {
   chatId: number;

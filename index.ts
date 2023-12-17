@@ -6,13 +6,15 @@ import { EH_contactHandler, EH_onCallbackQuery } from './src/eventHandlers';
 import { webDataHandler } from './src/webDataHandler';
 import { PrismaClient } from '@prisma/client';
 import {
+  createANewProduct,
   getAllOrders,
   getAllUsers,
   getLastAddedOrderForUser,
   getOrdersByUserId,
   orderDelete,
+  updateProduct,
   userDelete,
-} from './src/controllers/controller';
+} from './src/services/services';
 import cors from 'cors';
 
 dotenv.config();
@@ -115,6 +117,16 @@ app.delete('/orderDelete', async (req, _) => {
   const { orderNumber } = req.body;
 
   orderDelete(orderNumber);
+});
+
+app.post('/addNewProduct', async (req, _) => {
+  const { newProduct } = req.body;
+  createANewProduct(newProduct);
+});
+
+app.put('/updateProduct', async (req, _) => {
+  const { id, updatedData } = req.body;
+  updateProduct(id, updatedData);
 });
 
 // Start the Express server
