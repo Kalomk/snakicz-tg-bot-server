@@ -78,7 +78,7 @@ model Product {
   img String
   weight Int[] 
   description String?
-  isEnable Boolean
+  isEnable Boolean @default(true)
   category Int
   totalWeightProduct Int?
   totalProductWeightFromProducts Json?

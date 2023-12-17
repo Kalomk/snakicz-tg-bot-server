@@ -130,8 +130,7 @@ app.post('/addNewProduct', async (req, _) => {
   try {
     const { newProduct } = req.body;
     if (newProduct) {
-      const data = JSON.parse(newProduct);
-      createANewProduct(data);
+      createANewProduct(newProduct);
     }
     console.log(req.body);
   } catch (e) {
