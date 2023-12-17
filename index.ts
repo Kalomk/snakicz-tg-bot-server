@@ -11,6 +11,7 @@ import {
   getAllUsers,
   getLastAddedOrderForUser,
   getOrdersByUserId,
+  getProducts,
   orderDelete,
   updateProduct,
   userDelete,
@@ -117,6 +118,12 @@ app.delete('/orderDelete', async (req, _) => {
   const { orderNumber } = req.body;
 
   orderDelete(orderNumber);
+});
+
+app.get('/getProducts', async (_, res) => {
+  const products = await getProducts();
+
+  return res.json(products);
 });
 
 app.post('/addNewProduct', async (req, _) => {

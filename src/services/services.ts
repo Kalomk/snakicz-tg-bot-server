@@ -227,6 +227,10 @@ const createANewProduct = async (newProduct: ProductType) => {
   }
 };
 
+const getProducts = async () => {
+  return await prisma.product.findMany();
+};
+
 const updateProduct = async (id: number, newData: ProductType) => {
   try {
     await prisma.product.update({
@@ -267,4 +271,5 @@ export {
   createANewProduct,
   updateUserOrderStatus,
   updateProduct,
+  getProducts,
 };
