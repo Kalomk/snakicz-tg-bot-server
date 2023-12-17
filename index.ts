@@ -128,7 +128,11 @@ app.get('/getProducts', async (_, res) => {
 
 app.post('/addNewProduct', async (req, _) => {
   const { newProduct } = req.body;
-  createANewProduct(newProduct);
+  if (newProduct) {
+    const data = JSON.parse(newProduct);
+    createANewProduct(data);
+  }
+  console.log(req.body);
 });
 
 app.put('/updateProduct', async (req, _) => {
