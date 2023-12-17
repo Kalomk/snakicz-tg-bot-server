@@ -127,12 +127,16 @@ app.get('/getProducts', async (_, res) => {
 });
 
 app.post('/addNewProduct', async (req, _) => {
-  const { newProduct } = req.body;
-  if (newProduct) {
-    const data = JSON.parse(newProduct);
-    createANewProduct(data);
+  try {
+    const { newProduct } = req.body;
+    if (newProduct) {
+      const data = JSON.parse(newProduct);
+      createANewProduct(data);
+    }
+    console.log(req.body);
+  } catch (e) {
+    console.log(e);
   }
-  console.log(req.body);
 });
 
 app.put('/updateProduct', async (req, _) => {
