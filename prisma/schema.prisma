@@ -13,11 +13,11 @@ datasource db {
 
 
 model User {
-  id         Int      @id @default(autoincrement())
-  uniqueId      String @unique
-  phoneNumber   String
+  id             Int      @id @default(autoincrement())
+  uniqueId       String @unique
+  phoneNumber    String
   isFirstTimeBuy Boolean      @default(true)
-  ordersCount Int @default(0)
+  ordersCount    Int @default(0)
   
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -31,19 +31,19 @@ model Order {
   userName          String    // Им'я та Прізвище
   userLastName      String    // Им'я та Прізвище
   userCountry       String    // країна
-  addressPack       String?   // Адреса-Пачкомату
-  userAddress       String?   // Адреса-покупця
-  userCity          String?   // Місто
-  userIndexCity     String?   // Індекс
+  addressPack       String   // Адреса-Пачкомату
+  userAddress       String   // Адреса-покупця
+  userCity          String   // Місто
+  userIndexCity     String   // Індекс
   userNickname      String    // Нік
   isCatExist        Boolean   // Є котик
   orderNumber       String  @unique  // Номер замовлення
   freeDelivery      Boolean   // Безкоштовна доставка
   totalPrice        Float     // Сума замовлення
   activePrice       String    // Активна валюта
-  phoneNumber       String?   // Номер телефону для відправки
-  contactPhoneNumber String? // Номер телефону для контакту
-  email             String?   // Емейл
+  phoneNumber       String   // Номер телефону для відправки
+  contactPhoneNumber String // Номер телефону для контакту
+  email             String   // Емейл
   totalWeight       Float     // Вага замовлення
   orderItems        Json      // JSON array of order items
   isStatisted       Boolean     @default(false)
@@ -80,6 +80,6 @@ model Product {
   description String?
   isEnable Boolean @default(true)
   category Int
-  totalWeightProduct Int?
+  totalWeightProduct Int
   totalProductWeightFromProducts Json?
 }

@@ -15,7 +15,7 @@ import {
   orderDelete,
   updateProduct,
   userDelete,
-} from './src/services/services';
+} from './src/services';
 import cors from 'cors';
 
 dotenv.config();
@@ -130,17 +130,22 @@ app.post('/addNewProduct', async (req, _) => {
   try {
     const { newProduct } = req.body;
     if (newProduct) {
-      createANewProduct(newProduct);
+      const product = createANewProduct(newProduct);
+      return product;
     }
-    console.log(req.body);
   } catch (e) {
     console.log(e);
   }
 });
 
 app.put('/updateProduct', async (req, _) => {
-  const { id, updatedData } = req.body;
-  updateProduct(id, updatedData);
+  try {
+    const { id, updatedData } = req.body;
+    const updatedProduct = updateProduct({ id, newData: updatedData });
+    return updatedProduct;
+  } catch (e) {
+    console.log(e);
+  }
 });
 
 // Start the Express server

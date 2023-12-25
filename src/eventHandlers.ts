@@ -1,7 +1,6 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { webAppUrl } from '..';
-import { UT_sendKeyboardMessage } from './utils';
-import { createOrFindExistUser } from './services/services';
+import { Users } from './services';
 import { bot } from '..';
 import {
   SM_actualizeInfo,
@@ -19,7 +18,7 @@ export async function EH_contactHandler(msg: TelegramBot.Message) {
   // Generate a random number between 1000 and 9999
   const phoneNumber = msg?.contact?.phone_number!;
 
-  await createOrFindExistUser({ uniqueId: chatId.toString(), phoneNumber }).then((user) => {
+  await Users.createOrFindExistUser({ uniqueId: chatId.toString(), phoneNumber }).then((user) => {
     const isFirstTimeBuy = user?.isFirstTimeBuy;
 
     const webUrl = isFirstTimeBuy ? webAppUrl + '/priceSelect' : webAppUrl;

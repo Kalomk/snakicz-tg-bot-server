@@ -1,7 +1,7 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { group_chat, group_chat_for_payment } from '..';
 import { bot } from '..';
-import { getLastAddedOrderForUser } from './services/services';
+import { Orders } from './services';
 
 interface SendingMessageTypes {
   chatId: number;
@@ -94,7 +94,9 @@ export function SM_requestUserPhoto(chat_id: number) {
   // Listen for messages from the user
   bot.once('photo', async (msg) => {
     const chatId = msg.chat.id;
-    const orderNumber = await getLastAddedOrderForUser(chatId).then((order) => order?.orderNumber);
+    const orderNumber = await Orders.getLastAddedOrderForUser(chatId).then(
+      (order) => order?.orderNumber
+    );
 
     if (msg.photo && msg.photo.length > 0) {
       // The `msg.photo` property is an array of photo sizes

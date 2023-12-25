@@ -1,43 +1,6 @@
 import { group_chat, prisma, bot } from '..';
 import { UT_sendKeyboardMessage } from './utils';
-import { createOrder } from './services/services';
-
-export interface UserDataTypes {
-  userName: string;
-  userLastName: string;
-  phoneNumber: string;
-  email: string;
-  userIndexCity: string;
-  addressPack?: string;
-  userCity: string;
-  userAddress?: string;
-  catPic: undefined | string;
-}
-
-export type CartItem = {
-  title: string;
-  imageUrl: string;
-  price: number;
-  weight: number;
-  id: string | string;
-  count: number;
-  activePrice: 'zł' | '€';
-  activeCountry: string;
-};
-
-interface FormData {
-  data: UserDataTypes;
-  totalPrice: number;
-  totalWeight: number;
-  activePrice: string;
-  rightCurrentCountry: string;
-  rightShipPrice: number;
-  isCatExist: boolean;
-  freeDelivery: boolean;
-  products: CartItem[]; // Assuming OrderItem is another type/interface
-  userFromWeb: string; // Assuming UserType is another type/interface
-  chatId: number;
-}
+import { Orders } from './services';
 
 export async function webDataHandler(requestedData: FormData) {
   const { chatId, userFromWeb, ...dataFromResponse } = requestedData;
@@ -93,7 +56,7 @@ export async function webDataHandler(requestedData: FormData) {
           );
         }, 2000);
       }
-      createOrder({
+      Orders.createOrder({
         uniqueId: chatId,
         orderData: {
           orderNumber: JSON.stringify(orderNumber),
