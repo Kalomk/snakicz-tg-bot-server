@@ -141,8 +141,8 @@ app.put('/updateProduct', async (req, _) => {
 app.post('/postImageToCloud', async (req, res) => {
   try {
     console.log('BODY: ' + req.body);
-    const response = await UT_sendImageToCloud(req.body);
-    return res.status(200).json(response);
+    // const response = await UT_sendImageToCloud(req.body);
+    // return res.status(200).json(response);
   } catch (e) {
     console.log(e);
     return 'none';
