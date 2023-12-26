@@ -1,3 +1,4 @@
+import { ProductType, UserOrderStatus } from '@/types';
 import { prisma } from '../../..';
 
 const checkEnableProducts = async (products: ProductType[]) => {

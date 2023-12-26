@@ -1,3 +1,4 @@
+import { OrderType } from '@/types';
 import { prisma } from '../../../';
 
 const getAllOrders = async () => {

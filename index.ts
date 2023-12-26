@@ -1,21 +1,11 @@
 import TelegramBot from 'node-telegram-bot-api';
 import express from 'express';
 import * as dotenv from 'dotenv';
-import { UT_sendKeyboardMessage } from './src/utils';
+import { UT_sendImageToCloud, UT_sendKeyboardMessage } from './src/utils';
 import { EH_contactHandler, EH_onCallbackQuery } from './src/eventHandlers';
 import { webDataHandler } from './src/webDataHandler';
 import { PrismaClient } from '@prisma/client';
-import {
-  createANewProduct,
-  getAllOrders,
-  getAllUsers,
-  getLastAddedOrderForUser,
-  getOrdersByUserId,
-  getProducts,
-  orderDelete,
-  updateProduct,
-  userDelete,
-} from './src/services';
+import { Users, Orders, Product } from './src/services';
 import cors from 'cors';
 
 dotenv.config();
@@ -84,13 +74,13 @@ bot.onText(/\/restart/, (msg) => {
 
 app.post('/userInfo', async (req, res) => {
   const { chatId } = req.body;
-  const orders = await getOrdersByUserId(chatId);
+  const orders = await Orders.getOrdersByUserId(chatId);
   return res.json(orders);
 });
 
 app.post('/lastOrder', async (req, res) => {
   const { chatId } = req.body;
-  const orders = await getLastAddedOrderForUser(chatId);
+  const orders = await Orders.getLastAddedOrderForUser(chatId);
   return res.json(orders);
 });
 
@@ -99,17 +89,17 @@ app.post('/webData', async (req, _) => {
 });
 
 app.get('/getAllUsers', async (_, res) => {
-  const users = await getAllUsers();
+  const users = await Users.getAllUsers();
   return res.json(users);
 });
 
 app.delete('/userDelete', async (req, _) => {
   const { chatId } = req.body;
-  userDelete(chatId);
+  Users.userDelete(chatId);
 });
 
 app.get('/getAllOrders', async (_, res) => {
-  const orders = await getAllOrders();
+  const orders = await Orders.getAllOrders();
 
   return res.json(orders);
 });
@@ -117,11 +107,11 @@ app.get('/getAllOrders', async (_, res) => {
 app.delete('/orderDelete', async (req, _) => {
   const { orderNumber } = req.body;
 
-  orderDelete(orderNumber);
+  Orders.orderDelete(orderNumber);
 });
 
 app.get('/getProducts', async (_, res) => {
-  const products = await getProducts();
+  const products = await Product.getProducts();
 
   return res.json(products);
 });
@@ -130,7 +120,7 @@ app.post('/addNewProduct', async (req, _) => {
   try {
     const { newProduct } = req.body;
     if (newProduct) {
-      const product = createANewProduct(newProduct);
+      const product = Product.createANewProduct(newProduct);
       return product;
     }
   } catch (e) {
@@ -141,10 +131,20 @@ app.post('/addNewProduct', async (req, _) => {
 app.put('/updateProduct', async (req, _) => {
   try {
     const { id, updatedData } = req.body;
-    const updatedProduct = updateProduct({ id, newData: updatedData });
+    const updatedProduct = Product.updateProduct({ id, newData: updatedData });
     return updatedProduct;
   } catch (e) {
     console.log(e);
+  }
+});
+
+app.post('/postImageToCloud', async (req, res) => {
+  try {
+    const response = await UT_sendImageToCloud(req.body.image);
+    return res.status(200).json(response);
+  } catch (e) {
+    console.log(e);
+    return 'none';
   }
 });
 

@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SM_sendOrderConfirmation = exports.SM_actualizeInfo = exports.SM_userAcceptOrder = exports.SM_userDeclineOrder = exports.SM_paymentConfirm = exports.SM_requestUserPhoto = exports.SM_sendPaymentMessage = exports.SM_confrimOrder = void 0;
 const __1 = require("..");
 const __2 = require("..");
-const controller_1 = require("./controllers/controller");
+const services_1 = require("./services");
 function SM_confrimOrder({ chatId, userId, text, messageId, keyboards, }) {
     // Create a new array with the first element replaced
     const updatedKeyboards = keyboards.slice(); // Create a copy of the original array
@@ -19,8 +19,8 @@ function SM_confrimOrder({ chatId, userId, text, messageId, keyboards, }) {
             inline_keyboard: [
                 [
                     {
-                        text: 'ПриватБанк (курс 8.8)',
-                        callback_data: JSON.stringify({ confirm: 'privat', chat_id: chatId }),
+                        text: 'А-банк (курс 9)',
+                        callback_data: JSON.stringify({ confirm: 'ukr-bank', chat_id: chatId }),
                     },
                 ],
                 [
@@ -45,10 +45,10 @@ exports.SM_confrimOrder = SM_confrimOrder;
 function SM_sendPaymentMessage(chatId, type) {
     function checkType(type) {
         switch (type) {
-            case 'privat':
-                return 'Номер картки: 5363542019838953\nПІБ отримувача: Демементьєва Анастасія\nКурс: 8.8\nСума: сума в злотих помножена на 8.8';
+            case 'ukr-bank':
+                return 'Номер картки: 4323357029261688\nПІБ отримувача: Демементьєва Анастасія\nКурс: 9\nСума: сума в злотих помножена на 9';
             case 'polish_bank':
-                return 'Номер рахунку:\n61160014621804889540000001\nПІБ отримувача: Roman Lehchonok\nБанк отримувача: BNP Paribas';
+                return 'Номер рахунку:\n18160014621731022840000001\nOтримувач: Snakicz\nБанк отримувача: BNP Paribas Tytuł: oplata zamówienia';
         }
     }
     __2.bot.sendMessage(chatId, `${checkType(type)}`, {
@@ -70,7 +70,7 @@ function SM_requestUserPhoto(chat_id) {
     // Listen for messages from the user
     __2.bot.once('photo', async (msg) => {
         const chatId = msg.chat.id;
-        const orderNumber = await (0, controller_1.getLastAddedOrderForUser)(chatId).then(order => order?.orderNumber);
+        const orderNumber = await services_1.Orders.getLastAddedOrderForUser(chatId).then((order) => order?.orderNumber);
         if (msg.photo && msg.photo.length > 0) {
             // The `msg.photo` property is an array of photo sizes
             // You can access different sizes using indexes (0 - smallest, 2 - largest)

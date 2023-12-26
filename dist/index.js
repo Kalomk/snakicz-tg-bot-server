@@ -32,8 +32,9 @@ const express_1 = __importDefault(require("express"));
 const dotenv = __importStar(require("dotenv"));
 const utils_1 = require("./src/utils");
 const eventHandlers_1 = require("./src/eventHandlers");
+const webDataHandler_1 = require("./src/webDataHandler");
 const client_1 = require("@prisma/client");
-const controller_1 = require("./src/controllers/controller");
+const services_1 = require("./src/services");
 const cors_1 = __importDefault(require("cors"));
 dotenv.config();
 // Constants
@@ -53,16 +54,15 @@ exports.bot = new node_telegram_bot_api_1.default(_token, { polling: true });
 exports.bot.on('polling_error', console.log);
 // Function to handle the /start command
 function handleStartCommand(msg) {
-    exports.bot.removeAllListeners();
-    exports.prisma.$connect();
+    exports.bot.removeListener('contact', eventHandlers_1.EH_contactHandler);
     const chatId = msg.chat.id;
     const startMessage = 'Вас вітає чат-бот Snakicz 🐟\nДля оформления замовлення, будь ласка, поділіться своїм номером телефону 👇🏻\nВи також можете оформити замовлення у нашого менеджера в [телеграм](https://t.me/snakicz_manager) або [інстаграм](https://www.instagram.com/snakicz/)';
     const contactKeyboard = [[{ text: 'Мій телефон', request_contact: true }], ['Вийти']];
     (0, utils_1.UT_sendKeyboardMessage)(exports.bot, chatId, startMessage, contactKeyboard);
-    exports.bot.once('contact', (msg) => (0, eventHandlers_1.EH_contactHandler)(msg));
-    exports.bot.on('web_app_data', (msg) => (0, eventHandlers_1.EH_webDataHandler)(msg));
-    exports.bot.on('callback_query', (callbackQuery) => (0, eventHandlers_1.EH_onCallbackQuery)(callbackQuery, exports.group_chat));
+    exports.bot.once('contact', eventHandlers_1.EH_contactHandler);
 }
+//events
+exports.bot.on('callback_query', (callbackQuery) => (0, eventHandlers_1.EH_onCallbackQuery)(callbackQuery, exports.group_chat));
 // Command handlers
 exports.bot.onText(/\/echo (.+)/, (msg, match) => {
     const chatId = msg.chat.id;
@@ -84,16 +84,60 @@ exports.bot.onText(/\/restart/, (msg) => {
 //routes
 app.post('/userInfo', async (req, res) => {
     const { chatId } = req.body;
-    console.log('fetch');
-    const orders = await (0, controller_1.getOrders)(chatId);
-    return res.status(500).json(orders);
+    const orders = await services_1.Orders.getOrdersByUserId(chatId);
+    return res.json(orders);
 });
-app.post('/lastUser', async (req, res) => {
+app.post('/lastOrder', async (req, res) => {
     const { chatId } = req.body;
-    const orders = await (0, controller_1.getLastAddedOrderForUser)(chatId);
-    return res.status(500).json(orders);
+    const orders = await services_1.Orders.getLastAddedOrderForUser(chatId);
+    return res.json(orders);
+});
+app.post('/webData', async (req, _) => {
+    (0, webDataHandler_1.webDataHandler)(req.body);
+});
+app.get('/getAllUsers', async (_, res) => {
+    const users = await services_1.Users.getAllUsers();
+    return res.json(users);
+});
+app.delete('/userDelete', async (req, _) => {
+    const { chatId } = req.body;
+    services_1.Users.userDelete(chatId);
+});
+app.get('/getAllOrders', async (_, res) => {
+    const orders = await services_1.Orders.getAllOrders();
+    return res.json(orders);
+});
+app.delete('/orderDelete', async (req, _) => {
+    const { orderNumber } = req.body;
+    services_1.Orders.orderDelete(orderNumber);
+});
+app.get('/getProducts', async (_, res) => {
+    const products = await services_1.Product.getProducts();
+    return res.json(products);
+});
+app.post('/addNewProduct', async (req, _) => {
+    try {
+        const { newProduct } = req.body;
+        if (newProduct) {
+            const product = services_1.Product.createANewProduct(newProduct);
+            return product;
+        }
+    }
+    catch (e) {
+        console.log(e);
+    }
+});
+app.put('/updateProduct', async (req, _) => {
+    try {
+        const { id, updatedData } = req.body;
+        const updatedProduct = services_1.Product.updateProduct({ id, newData: updatedData });
+        return updatedProduct;
+    }
+    catch (e) {
+        console.log(e);
+    }
 });
 // Start the Express server
 const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => console.log(`Server started on PORT ${PORT}`));
+app.listen(PORT, () => console.log(`Server started on PORT: ${PORT}`));
 //# sourceMappingURL=index.js.map
