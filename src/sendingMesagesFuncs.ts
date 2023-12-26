@@ -36,7 +36,7 @@ export function SM_confrimOrder({
       inline_keyboard: [
         [
           {
-            text: 'А-банк (курс 9)(в гривнях)',
+            text: 'А-банк (курс 9.5)(в гривнях)',
             callback_data: JSON.stringify({ confirm: 'privat', chat_id: chatId }),
           },
         ],
@@ -69,7 +69,7 @@ export function SM_sendPaymentMessage(chatId: number, type: string) {
   function checkType(type: string) {
     switch (type) {
       case 'privat':
-        return 'Номер картки: 4323357029261688\nПІБ отримувача: Демементьєва Анастасія\nКурс: 9\nСума: сума в злотих помножена на 9';
+        return 'Номер картки: 4323357029261688\nПІБ отримувача: Демементьєва Анастасія\nКурс: 9.5\nСума: сума в злотих помножена на 9.5';
       case 'polish_bank':
         return 'Номер рахунку:\n18160014621731022840000001\nOтримувач: Snakicz\nБанк отримувача: BNP Paribas Tytuł: oplata zamówienia';
     }
