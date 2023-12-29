@@ -1,7 +1,7 @@
 import TelegramBot from 'node-telegram-bot-api';
 import express from 'express';
 import * as dotenv from 'dotenv';
-import { UT_sendImageToCloud, UT_sendKeyboardMessage } from './src/utils';
+import { UT_sendKeyboardMessage } from './src/utils';
 import { EH_contactHandler, EH_onCallbackQuery } from './src/eventHandlers';
 import { webDataHandler } from './src/webDataHandler';
 import { PrismaClient } from '@prisma/client';
@@ -24,12 +24,6 @@ export const prisma = new PrismaClient();
 // Middleware
 app.use(express.json());
 app.use(cors());
-
-// Enable CORS for all origins (not recommended for production)
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  next();
-});
 
 // Create Telegram Bot
 export const bot: TelegramBot = new TelegramBot(_token, { polling: true });
@@ -141,17 +135,6 @@ app.put('/updateProduct', async (req, _) => {
     return updatedProduct;
   } catch (e) {
     console.log(e);
-  }
-});
-
-app.post('/postImageToCloud', async (req, res) => {
-  try {
-    console.log('BODY: ' + req.body);
-    const response = await UT_sendImageToCloud(req.body);
-    return response;
-  } catch (e) {
-    console.log(e);
-    return 'none';
   }
 });
 
