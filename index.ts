@@ -24,6 +24,14 @@ export const prisma = new PrismaClient();
 // Middleware
 app.use(express.json());
 app.use(cors());
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+  // You can also use '*' to allow requests from any origin during development
+  // res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  next();
+});
 
 // Create Telegram Bot
 export const bot: TelegramBot = new TelegramBot(_token, { polling: true });
@@ -116,13 +124,11 @@ app.get('/getProducts', async (_, res) => {
   return res.json(products);
 });
 
-app.post('/addNewProduct', async (req, _) => {
+app.post('/addNewProduct', async (req, res) => {
   try {
     const { newProduct } = req.body;
-    if (newProduct) {
-      const product = Product.createANewProduct(newProduct);
-      return product;
-    }
+    const product = Product.createANewProduct(newProduct);
+    res.status(200).send(product);
   } catch (e) {
     console.log(e);
   }
@@ -133,6 +139,15 @@ app.put('/updateProduct', async (req, _) => {
     const { id, updatedData } = req.body;
     const updatedProduct = Product.updateProduct({ id, newData: updatedData });
     return updatedProduct;
+  } catch (e) {
+    console.log(e);
+  }
+});
+
+app.delete('/deleteProduct', async (req, res) => {
+  try {
+    const { id } = req.body;
+    Product.deleteProduct(id);
   } catch (e) {
     console.log(e);
   }

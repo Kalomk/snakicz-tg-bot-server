@@ -39,7 +39,8 @@ export type UserOrderStatus =
 export interface ProductType {
   id: number;
   title: string;
-  price: { zł: number[]; '€': number[] };
+  price: { [key: string]: number };
+  '€': { [key: string]: number };
   img: string;
   weight: number[];
   description?: string;

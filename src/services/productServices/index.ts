@@ -43,6 +43,14 @@ const updateProduct = async ({ id, newData }: { id: number; newData: ProductType
   }
 };
 
+const deleteProduct = async (id: number) => {
+  try {
+    await prisma.product.delete({ where: { id } });
+  } catch (e) {
+    console.log(e);
+  }
+};
+
 const updateUserOrderStatus = async (orderNumber: string, status: UserOrderStatus) => {
   try {
     await prisma.order.update({
@@ -75,4 +83,5 @@ export {
   updateProduct,
   getProducts,
   changeQuantityOfProduct,
+  deleteProduct,
 };
