@@ -25,7 +25,7 @@ export const prisma = new PrismaClient();
 app.use(express.json());
 app.use(cors());
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+  res.setHeader('Access-Control-Allow-Origin', '*');
   // You can also use '*' to allow requests from any origin during development
   // res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
@@ -130,7 +130,7 @@ app.post('/addNewProduct', async (req, res) => {
   try {
     const { newProduct } = req.body;
     const product = Product.createANewProduct(newProduct);
-    return res.status(200).send(product);
+    return res.status(200).json(product);
   } catch (e) {
     console.log(e);
   }
