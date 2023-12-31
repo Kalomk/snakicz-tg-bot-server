@@ -14,7 +14,7 @@ const checkEnableProducts = async (products: ProductType[]) => {
 
 const createANewProduct = async (newProduct: ProductType) => {
   try {
-    await prisma.product.create({
+    return await prisma.product.create({
       data: {
         ...newProduct,
       },
