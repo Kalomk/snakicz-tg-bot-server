@@ -128,10 +128,11 @@ app.post('/addNewProduct', async (req, res) => {
   try {
     const { newProduct } = req.body;
     const product = Product.createANewProduct(newProduct);
-    res.status(200).send(product);
+    return res.status(200).send(product);
   } catch (e) {
     console.log(e);
   }
+  console.log(req.body);
 });
 
 app.put('/updateProduct', async (req, _) => {
