@@ -125,6 +125,8 @@ app.get('/getProducts', async (_, res) => {
 });
 
 app.post('/addNewProduct', async (req, res) => {
+  console.log(req.body);
+
   try {
     const { newProduct } = req.body;
     const product = Product.createANewProduct(newProduct);
@@ -132,7 +134,6 @@ app.post('/addNewProduct', async (req, res) => {
   } catch (e) {
     console.log(e);
   }
-  console.log(req.body);
 });
 
 app.put('/updateProduct', async (req, _) => {
