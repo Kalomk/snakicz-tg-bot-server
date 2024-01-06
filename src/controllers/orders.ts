@@ -1,6 +1,6 @@
 import { ControllerFunctionType } from '@/types';
 import { prisma } from '../..';
-import { createOrderService, getLastDataService } from '@/services/orderService';
+import { createOrderService, getLastDataService } from '../services/orderService';
 
 const getAllOrders: ControllerFunctionType = async (_, res) => {
   try {

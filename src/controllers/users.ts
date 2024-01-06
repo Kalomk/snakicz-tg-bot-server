@@ -1,4 +1,4 @@
-import { createOrFindExistUserService } from '@/services/userService';
+import { createOrFindExistUserService } from '../services/userService';
 import { prisma } from '../..';
 import { ControllerFunctionType } from '@/types';
 

@@ -1,4 +1,4 @@
-import { ProductType, UserOrderStatus } from '@/types';
+import { ProductType } from '@/types';
 import { prisma } from '../..';
 import { ControllerFunctionType } from '@/types';
 
