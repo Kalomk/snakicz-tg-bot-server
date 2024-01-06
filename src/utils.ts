@@ -26,9 +26,9 @@ export function removeExtension(filename: string) {
 
 export function useControllers(app: express.Application) {
   const controllers = fs.readdirSync(path.join(__dirname, 'controllers'));
-
+  console.log(controllers);
   controllers.forEach((controller) => {
-    const controllerModule = require(`./src/controllers/${controller}`);
+    const controllerModule = require(`./controllers/${controller}`);
 
     // Extracting variables from the controller file
     const variables = Object.keys(controllerModule);
