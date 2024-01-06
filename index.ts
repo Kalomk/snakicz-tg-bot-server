@@ -36,7 +36,7 @@ export const bot: TelegramBot = new TelegramBot(_token, { polling: true });
 
 //startBot
 
-startBot;
+startBot();
 
 //routes
 useControllers(app);
