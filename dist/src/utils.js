@@ -43,7 +43,9 @@ function removeExtension(filename) {
 }
 exports.removeExtension = removeExtension;
 function useControllers(app) {
-    const controllers = fs.readdirSync(path.join(__dirname, 'controllers'));
+    const controllers = fs.readdirSync(path.join(__dirname, 'controllers')).filter((controller) => {
+        controller !== 'controller.js' && controller !== 'controller.js.map';
+    });
     console.log(controllers);
     controllers.forEach((controller) => {
         const controllerModule = require(`./controllers/${controller}`);
