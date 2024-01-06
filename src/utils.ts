@@ -25,7 +25,9 @@ export function removeExtension(filename: string) {
 }
 
 export function useControllers(app: express.Application) {
-  const controllers = fs.readdirSync(path.join(__dirname, 'controllers'));
+  const controllers = fs.readdirSync(path.join(__dirname, 'controllers')).filter((controller) => {
+    controller !== 'controller.js' && controller !== 'controller.js.map';
+  });
   console.log(controllers);
   controllers.forEach((controller) => {
     const controllerModule = require(`./controllers/${controller}`);
