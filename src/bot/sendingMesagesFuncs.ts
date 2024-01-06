@@ -1,7 +1,8 @@
 import TelegramBot from 'node-telegram-bot-api';
-import { group_chat, group_chat_for_payment } from '..';
-import { bot } from '..';
-import { Orders } from './services';
+import { group_chat, group_chat_for_payment } from '../..';
+import { bot } from '../..';
+import { Orders } from '../controllers/orders';
+import { getLastDataService } from '../services/orderService';
 
 interface SendingMessageTypes {
   chatId: number;
@@ -94,7 +95,7 @@ export function SM_requestUserPhoto(chat_id: number) {
   // Listen for messages from the user
   bot.once('photo', async (msg) => {
     const chatId = msg.chat.id;
-    const orderNumber = await Orders.getLastAddedOrderForUser(chatId).then(
+    const orderNumber = await getLastDataService(chatId.toString()).then(
       (order) => order?.orderNumber
     );
 

@@ -1,38 +1,12 @@
-import { prisma } from '../../../';
+import { createOrFindExistUserService } from '@/services/userService';
+import { prisma } from '../..';
+import { ControllerFunctionType } from '@/types';
 
-const createOrFindExistUser = async ({
-  uniqueId,
-  phoneNumber,
-}: {
-  uniqueId: string;
-  phoneNumber: string;
-}): Promise<
-  | {
-      id: number;
-      uniqueId: string;
-      phoneNumber: string;
-      isFirstTimeBuy: boolean;
-      ordersCount: number;
-      createdAt: Date;
-      updatedAt: Date;
-    }
-  | undefined
-> => {
+const createOrFindExistUser: ControllerFunctionType = async (req, res) => {
   try {
-    const user = await prisma.user.findUnique({
-      where: {
-        uniqueId: uniqueId.toString(),
-      },
-    });
-
-    if (user) return user;
-
-    return prisma.user.create({
-      data: {
-        uniqueId: uniqueId.toString(),
-        phoneNumber,
-      },
-    });
+    const { uniqueId, phoneNumber } = req.body;
+    const user = await createOrFindExistUserService({ uniqueId, phoneNumber });
+    return res.json(user);
   } catch (e) {
     console.log(e);
   }
@@ -46,8 +20,10 @@ const getAllUsers = () => {
     return [];
   }
 };
-const userDelete = (uniqueId: string) => {
+const userDelete: ControllerFunctionType = async (req, res) => {
   try {
+    const { uniqueId } = req.body;
+
     return prisma.user.delete({ where: { uniqueId } });
   } catch (e) {
     console.log(e);
@@ -82,4 +58,4 @@ const userDelete = (uniqueId: string) => {
 //   }
 // };
 
-export { createOrFindExistUser, getAllUsers, userDelete };
+export const Users = { createOrFindExistUser, getAllUsers, userDelete };

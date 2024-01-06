@@ -1,4 +1,7 @@
 import TelegramBot from 'node-telegram-bot-api';
+import * as fs from 'fs';
+import * as path from 'path';
+import express from 'express';
 
 // Helper function to send a message with a keyboard
 export function UT_sendKeyboardMessage(
@@ -15,4 +18,29 @@ export function UT_sendKeyboardMessage(
     },
   };
   bot.sendMessage(chatId, text, options);
+}
+
+export function removeExtension(filename: string) {
+  return filename.replace(/\.[^/.]+$/, '');
+}
+
+export function useControllers(app: express.Application) {
+  const controllers = fs.readdirSync(path.join(__dirname, 'src', 'controllers'));
+
+  controllers.forEach((controller) => {
+    const controllerModule = require(`./src/controllers/${controller}`);
+
+    // Extracting variables from the controller file
+    const variables = Object.keys(controllerModule);
+
+    // console.log(controllerModule);
+    variables.forEach((moduleObj) => {
+      const funcs = Object.keys(controllerModule[moduleObj]);
+      funcs.forEach((func) => {
+        const controlleName = removeExtension(controller);
+        console.log(`/${controlleName}/${func}`);
+        app.use(`/${controlleName}/${func}`, controllerModule[moduleObj][func]);
+      });
+    });
+  });
 }

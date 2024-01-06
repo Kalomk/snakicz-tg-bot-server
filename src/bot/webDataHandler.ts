@@ -1,7 +1,7 @@
-import { group_chat, prisma, bot } from '..';
-import { UT_sendKeyboardMessage } from './utils';
-import { Orders } from './services';
-import { FormData } from './types';
+import { group_chat, prisma, bot } from '../..';
+import { UT_sendKeyboardMessage } from '../utils';
+import { FormData } from '../types';
+import { createOrderService } from '../services/orderService';
 
 export async function webDataHandler(requestedData: FormData) {
   const { chatId, userFromWeb, ...dataFromResponse } = requestedData;
@@ -57,7 +57,7 @@ export async function webDataHandler(requestedData: FormData) {
           );
         }, 2000);
       }
-      Orders.createOrder({
+      createOrderService({
         uniqueId: chatId,
         orderData: {
           orderNumber: JSON.stringify(orderNumber),

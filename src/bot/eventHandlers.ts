@@ -1,7 +1,6 @@
 import TelegramBot from 'node-telegram-bot-api';
-import { webAppUrl } from '..';
-import { Users } from './services';
-import { bot } from '..';
+import { webAppUrl } from '../..';
+import { bot } from '../..';
 import {
   SM_actualizeInfo,
   SM_confrimOrder,
@@ -12,13 +11,30 @@ import {
   SM_userAcceptOrder,
   SM_userDeclineOrder,
 } from './sendingMesagesFuncs';
+import { createOrFindExistUserService } from '@/services/userService';
+import { UT_sendKeyboardMessage } from '@/utils';
+
+// Function to handle the /start command
+export function EH_handleStartCommand(msg: TelegramBot.Message) {
+  bot.removeListener('contact', EH_contactHandler);
+
+  const chatId = msg.chat.id;
+
+  const startMessage =
+    'Вас вітає чат-бот Snakicz 🐟\nДля оформления замовлення, будь ласка, поділіться своїм номером телефону 👇🏻\nВи також можете оформити замовлення у нашого менеджера в [телеграм](https://t.me/snakicz_manager) або [інстаграм](https://www.instagram.com/snakicz/)';
+  const contactKeyboard = [[{ text: 'Мій телефон', request_contact: true }], ['Вийти']];
+
+  UT_sendKeyboardMessage(bot, chatId, startMessage, contactKeyboard);
+
+  bot.once('contact', EH_contactHandler);
+}
 
 export async function EH_contactHandler(msg: TelegramBot.Message) {
   const chatId = msg.chat.id;
   // Generate a random number between 1000 and 9999
   const phoneNumber = msg?.contact?.phone_number!;
 
-  await Users.createOrFindExistUser({ uniqueId: chatId.toString(), phoneNumber }).then((user) => {
+  await createOrFindExistUserService({ uniqueId: chatId.toString(), phoneNumber }).then((user) => {
     const isFirstTimeBuy = user?.isFirstTimeBuy;
 
     const webUrl = isFirstTimeBuy ? webAppUrl + '/priceSelect' : webAppUrl;

@@ -1,3 +1,7 @@
+import { Request, Response } from 'express';
+
+export type ControllerFunctionType = (req: Request, res: Response) => Promise<any>;
+
 export interface OrderType {
   userName: string; // Им'я та Прізвище
   userLastName: string; // Им'я та Прізвище
@@ -84,5 +88,5 @@ export interface FormData {
   freeDelivery: boolean;
   products: CartItem[]; // Assuming OrderItem is another type/interface
   userFromWeb: string; // Assuming UserType is another type/interface
-  chatId: number;
+  chatId: string;
 }
