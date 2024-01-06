@@ -12,7 +12,7 @@ import {
   SM_userDeclineOrder,
 } from './sendingMesagesFuncs';
 import { createOrFindExistUserService } from '../services/userService';
-import { UT_sendKeyboardMessage } from '@/utils';
+import { UT_sendKeyboardMessage } from '../utils';
 
 // Function to handle the /start command
 export function EH_handleStartCommand(msg: TelegramBot.Message) {
