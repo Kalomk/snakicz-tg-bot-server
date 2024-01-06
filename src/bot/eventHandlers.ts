@@ -11,7 +11,7 @@ import {
   SM_userAcceptOrder,
   SM_userDeclineOrder,
 } from './sendingMesagesFuncs';
-import { createOrFindExistUserService } from '@/services/userService';
+import { createOrFindExistUserService } from '../services/userService';
 import { UT_sendKeyboardMessage } from '@/utils';
 
 // Function to handle the /start command
