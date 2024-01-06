@@ -4,7 +4,7 @@ import * as dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 import cors from 'cors';
 import { useControllers } from './src/utils';
-import { startBot } from '@/bot';
+import { startBot } from './src/bot';
 
 dotenv.config();
 
@@ -36,7 +36,7 @@ export const bot: TelegramBot = new TelegramBot(_token, { polling: true });
 
 //startBot
 
-startBot();
+startBot;
 
 //routes
 useControllers(app);
