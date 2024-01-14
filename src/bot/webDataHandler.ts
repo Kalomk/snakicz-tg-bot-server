@@ -1,7 +1,20 @@
 import { group_chat, prisma, bot } from '../..';
 import { UT_sendKeyboardMessage } from '../utils';
-import { FormData } from '../types';
+import { FormData, OrderType } from '../../types';
 import { createOrderService } from '../services/orderService';
+
+interface DataFromResponse {
+  data?: OrderType;
+  products: any[]; // Update this type based on your actual product data structure
+  totalPrice: number;
+  totalWeight: number;
+  freeDelivery: boolean;
+  isCatExist: boolean;
+  activePrice: string;
+  rightShipPrice: string;
+  rightCurrentCountry: string;
+  orderNumber?: string;
+}
 
 export async function webDataHandler(requestedData: FormData) {
   const { chatId, userFromWeb, ...dataFromResponse } = requestedData;
@@ -10,6 +23,32 @@ export async function webDataHandler(requestedData: FormData) {
   const user = await prisma.user.findUnique({
     where: { uniqueId: chatId.toString() },
   });
+  const sendMessages = async ({
+    data,
+    totalPrice,
+    activePrice,
+    totalWeight,
+    orderNumber,
+  }: Partial<DataFromResponse>) => {
+    const messagesToSend: any[] = [
+      (data?.addressPack && `Адреса пачкомату:${data?.addressPack}`) ||
+        (data?.userAddress && `Ваша адреса: ${data?.userAddress}`),
+      `Cума замовлення: ${totalPrice} ${activePrice}`,
+      `Вага замовлення: ${totalWeight} грам`,
+      `Номер замовлення: ${orderNumber}`,
+    ];
+
+    for (const message of messagesToSend) {
+      await bot.sendMessage(chatId, message);
+    }
+
+    setTimeout(async () => {
+      await bot.sendMessage(
+        chatId,
+        'Дякуємо за замовлення ❤️\nБудь ласка, очікуйте підтвердження і реквізити на оплату\nЯкщо у вас виникли питання - Ви можете звернутись до нашого менеджера у телеграм (https://t.me/snakicz_manager) або (https://www.instagram.com/snakicz/)'
+      );
+    }, 2000);
+  };
 
   if (user) {
     const userPhoneNumber = user?.phoneNumber;
@@ -26,63 +65,43 @@ export async function webDataHandler(requestedData: FormData) {
         activePrice,
         rightShipPrice,
         rightCurrentCountry,
-      } = dataFromResponse;
+      } = dataFromResponse as unknown as DataFromResponse;
       const calcTotalPrice = +totalPrice + Number(rightShipPrice);
 
-      const addressPack = data?.addressPack || 'нема';
-      const userAddress = data?.userAddress || 'нема';
+      const addressPack = data!.addressPack || 'нема';
+      const userAddress = data!.userAddress || 'нема';
       const country = rightCurrentCountry;
-      const userCity = data?.userCity;
+      const userCity = data!.userCity;
       const userIndexCity = data?.userIndexCity;
       const userNickname = userFromWeb;
-      const email = data?.email;
+      const email = data!.email;
 
-      async function sendMessages() {
-        const messagesToSend: any[] = [
-          (data?.addressPack && `Адреса пачкомату:${data?.addressPack}`) ||
-            (data?.userAddress && `Ваша адреса: ${data?.userAddress}`),
-          `Cума замовлення: ${calcTotalPrice} ${activePrice}`,
-          `Вага замовлення: ${totalWeight} грам`,
-          `Номер замовлення: ${orderNumber}`,
-        ];
-
-        for (const message of messagesToSend) {
-          await bot.sendMessage(chatId, message);
-        }
-
-        setTimeout(async () => {
-          await bot.sendMessage(
-            chatId,
-            'Дякуємо за замовлення ❤️\nБудь ласка, очікуйте підтвердження і реквізити на оплату\nЯкщо у вас виникли питання - Ви можете звернутись до нашого менеджера у телеграм (https://t.me/snakicz_manager) або (https://www.instagram.com/snakicz/)'
-          );
-        }, 2000);
-      }
       createOrderService({
         uniqueId: chatId,
         orderData: {
           orderNumber: JSON.stringify(orderNumber),
           contactPhoneNumber: userPhoneNumber,
-          phoneNumber: data?.phoneNumber,
+          phoneNumber: data!.phoneNumber,
           userNickname,
           userAddress,
           userCountry: country,
           userCity,
-          userIndexCity,
-          userLastName: data?.userLastName,
-          userName: data?.userName,
+          userIndexCity: userIndexCity!,
+          userLastName: data!.userLastName,
+          userName: data!.userName,
           isCatExist,
           addressPack,
           freeDelivery,
           activePrice,
-          totalPrice,
+          totalPrice: totalPrice!,
           email,
           price: calcTotalPrice,
-          totalWeight,
+          totalWeight: totalWeight!,
           orderItems: JSON.stringify(products),
         },
       });
 
-      sendMessages();
+      sendMessages({ data, activePrice, totalPrice, totalWeight, orderNumber });
 
       // Update the user's values
       await prisma.user.update({

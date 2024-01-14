@@ -29,7 +29,6 @@ export function useControllers(app: express.Application) {
     return !controller.endsWith('.map') && controller !== 'controller.js'; // Filter out files ending with '.map' and 'controller.js'
   });
 
-  console.log(controllers);
   controllers.forEach((controller) => {
     const controllerModule = require(`./controllers/${controller}`);
 

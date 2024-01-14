@@ -2,11 +2,7 @@ import TelegramBot from 'node-telegram-bot-api';
 import { webAppUrl } from '../..';
 import { bot } from '../..';
 import {
-  SM_actualizeInfo,
-  SM_confrimOrder,
-  SM_paymentConfirm,
   SM_requestUserPhoto,
-  SM_sendOrderConfirmation,
   SM_sendPaymentMessage,
   SM_userAcceptOrder,
   SM_userDeclineOrder,
@@ -68,8 +64,6 @@ export async function EH_onCallbackQuery(
   const text = callbackQuery?.message?.text!;
   const chatId = callbackQuery?.message?.chat.id!;
   const messageId = callbackQuery?.message?.message_id!;
-  const keyboards = callbackQuery?.message?.reply_markup?.inline_keyboard!;
-  const userId = action?.chat_id!;
   const messageIdGroup = action?.message_id!;
 
   let orderNumberFromText;
@@ -84,40 +78,14 @@ export async function EH_onCallbackQuery(
   }
 
   switch (action.confirm) {
-    case 'confirm':
-      SM_confrimOrder({ text, chatId, userId, messageId, keyboards });
-      break;
     case 'privat':
       SM_sendPaymentMessage(chatId!, action.confirm);
       break;
     case 'polish_bank':
       SM_sendPaymentMessage(chatId!, action.confirm);
       break;
-    case 'pay-confirm':
-      SM_paymentConfirm({ text, chatId, userId, messageId, keyboards });
-      break;
-    case 'send-pack-number':
-      SM_sendOrderConfirmation({
-        text,
-        chatId,
-        userId,
-        messageId,
-        keyboards,
-        orderNumberFromText: orderNumberFromText!,
-      });
-      break;
     case 'sendPhoto':
       SM_requestUserPhoto(chatId!);
-      break;
-    case 'actualize':
-      SM_actualizeInfo({
-        text,
-        chatId,
-        keyboards,
-        userId,
-        messageId,
-        orderNumberFromText: orderNumberFromText!,
-      });
       break;
     case 'accept':
       SM_userAcceptOrder(bot, group_id, orderNumberFromText!);
@@ -129,7 +97,7 @@ export async function EH_onCallbackQuery(
         group_id,
         messageId_group: messageIdGroup,
         messageId,
-        orderNumberFromText: orderNumberFromText!,
+        orderNumber: orderNumberFromText!,
       });
       break;
   }

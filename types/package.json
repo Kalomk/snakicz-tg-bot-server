@@ -1,0 +1,12 @@
+{
+  "name": "snakicz-types",
+  "version": "1.0.2",
+  "description": "snakicz-types",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "release": "npm version patch && npm publish"
+  },
+  "author": "Kalomk",
+  "license": "ISC"
+}

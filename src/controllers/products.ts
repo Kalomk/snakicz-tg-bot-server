@@ -1,6 +1,5 @@
-import { ProductType } from '@/types';
+import { ProductType, ControllerFunctionType } from '../../types';
 import { prisma } from '../..';
-import { ControllerFunctionType } from '@/types';
 
 const createANewProduct: ControllerFunctionType = async (req, res) => {
   try {
@@ -16,8 +15,9 @@ const createANewProduct: ControllerFunctionType = async (req, res) => {
   }
 };
 
-const getProducts: ControllerFunctionType = async () => {
-  return await prisma.product.findMany();
+const getProducts: ControllerFunctionType = async (_, res) => {
+  const products = await prisma.product.findMany();
+  return res.json(products);
 };
 
 const updateProduct: ControllerFunctionType = async (req, res) => {

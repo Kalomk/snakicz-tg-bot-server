@@ -1,37 +1,18 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { group_chat, group_chat_for_payment } from '../..';
 import { bot } from '../..';
-import { Orders } from '../controllers/orders';
 import { getLastDataService } from '../services/orderService';
 
 interface SendingMessageTypes {
   chatId: number;
   userId: number;
-  text: string;
-  messageId: number;
-  keyboards: TelegramBot.InlineKeyboardButton[][];
+  messageId?: string;
+  messages?: string[];
 }
 
-type SendingMessageTypeWithOrderNuymber = SendingMessageTypes & { orderNumberFromText: string };
+type SendingMessageTypeWithOrderNuymber = SendingMessageTypes & { orderNumber: string };
 
-export function SM_confrimOrder({
-  chatId,
-  userId,
-  text,
-  messageId,
-  keyboards,
-}: SendingMessageTypes) {
-  // Create a new array with the first element replaced
-  const updatedKeyboards = keyboards.slice(); // Create a copy of the original array
-  updatedKeyboards[0] = [
-    {
-      text: 'Підтверженно!!!',
-      callback_data: 'payment_confirmation',
-    },
-  ];
-
-  const inlineKeyboard = [...updatedKeyboards];
-
+export function SM_confrimOrder({ chatId, userId }: SendingMessageTypes) {
   const paymentButtons: TelegramBot.EditMessageTextOptions = {
     reply_markup: {
       inline_keyboard: [
@@ -50,14 +31,6 @@ export function SM_confrimOrder({
       ],
     },
   };
-
-  bot.editMessageText(text, {
-    chat_id: chatId,
-    message_id: messageId,
-    reply_markup: {
-      inline_keyboard: inlineKeyboard,
-    },
-  });
 
   bot.sendMessage(
     userId,
@@ -121,90 +94,40 @@ export function SM_requestUserPhoto(chat_id: number) {
   });
 }
 
-export function SM_paymentConfirm({
-  chatId,
-  userId,
-  text,
-  messageId,
-  keyboards,
-}: SendingMessageTypes) {
-  // Create a new array with the first element replaced
-  const updatedKeyboards = keyboards.slice(); // Create a copy of the original array
-  updatedKeyboards[1] = [
-    {
-      text: 'Оплату підтверджено!!!',
-      callback_data: 'payment_confirmation',
-    },
-  ];
-
-  const inlineKeyboard = [...updatedKeyboards];
-
-  bot.editMessageText(text, {
-    chat_id: chatId,
-    message_id: messageId,
-    reply_markup: {
-      inline_keyboard: inlineKeyboard,
-    },
-  });
-
+export function SM_paymentConfirm({ userId }: SendingMessageTypes) {
   bot.sendMessage(userId, 'Вашу оплату підтверджено✅\nБудь ласка, очікуйте номер відправлення 📦');
 }
 
 export function SM_userDeclineOrder({
   chatId,
   group_id,
-  messageId_group,
   messageId,
-  orderNumberFromText,
+  orderNumber,
 }: {
   bot: TelegramBot;
   chatId: number;
   group_id: string;
   messageId_group: number;
   messageId: number;
-  orderNumberFromText: string;
+  orderNumber: string;
 }) {
   bot.editMessageText('Ваше замовлення було аннульоване!', {
     chat_id: chatId,
     message_id: messageId,
   });
 
-  bot.editMessageText(`Замовлення ${orderNumberFromText} відхилено`, {
-    chat_id: group_id,
-    message_id: messageId_group,
-  });
+  bot.sendMessage(group_id, `Замовлення ${orderNumber} відхилено`);
 }
 
-export function SM_userAcceptOrder(bot: TelegramBot, groupId: string, orderNumberFromText: string) {
-  bot.sendMessage(groupId, `Замовлення ${orderNumberFromText} продовжено`);
+export function SM_userAcceptOrder(bot: TelegramBot, groupId: string, orderNumber: string) {
+  bot.sendMessage(groupId, `Замовлення ${orderNumber} продовжено`);
 }
 
 export function SM_actualizeInfo({
-  chatId,
-  keyboards,
-  userId,
   messageId,
-  text,
-  orderNumberFromText,
+  userId,
+  orderNumber,
 }: SendingMessageTypeWithOrderNuymber) {
-  const updatedKeyboards = keyboards.slice(); // Create a copy of the original array
-  updatedKeyboards[3] = [
-    {
-      text: 'Запит вислано (Натисніть знову щоб вислати запит знову)',
-      callback_data: 'actualize',
-    },
-  ];
-
-  const inlineKeyboard = [...updatedKeyboards];
-
-  bot.editMessageText(text, {
-    chat_id: chatId,
-    message_id: messageId,
-    reply_markup: {
-      inline_keyboard: inlineKeyboard,
-    },
-  });
-
   const inlineKeyboardUser: TelegramBot.SendMessageOptions = {
     reply_markup: {
       inline_keyboard: [
@@ -226,53 +149,20 @@ export function SM_actualizeInfo({
 
   bot.sendMessage(
     userId,
-    `Чи ваше замовлення ( Номер замовлення: ${orderNumberFromText} ) ще актуально?`,
+    `Чи ваше замовлення ( Номер замовлення: ${orderNumber} ) ще актуально?`,
     inlineKeyboardUser
   );
 }
 
 export function SM_sendOrderConfirmation({
-  chatId,
-  keyboards,
   userId,
-  messageId,
-  text,
-  orderNumberFromText,
+  orderNumber,
+  messages,
 }: SendingMessageTypeWithOrderNuymber) {
-  // Create a new array with the first element replaced
-  const updatedKeyboards = keyboards.slice(); // Create a copy of the original array
-  updatedKeyboards[2] = [
-    {
-      text: 'Інформацію о посилці вислано (Знову вислати)!!!',
-      callback_data: 'send-pack-number',
-    },
-  ];
-  const inlineKeyboard = [...updatedKeyboards];
-
   bot.sendMessage(
-    group_chat,
-    `Надішліть інформацію про доставку посилки № ${orderNumberFromText}  через SPACE: 1) служба доставки 2) номер посилки`
+    userId,
+    `Ваше замовлення № ${orderNumber} відправлено службою ${messages![0]} ,\n номер відправлення ${
+      messages![1]
+    }📦`
   );
-  bot.once('message', async (msg) => {
-    const textFromMsg = msg?.text;
-    try {
-      const messages = textFromMsg!.split(' ');
-
-      bot.sendMessage(
-        userId,
-        `Ваше замовлення № ${orderNumberFromText} відправлено службою ${messages[0]} ,\n номер відправлення ${messages[1]}📦`
-      );
-
-      bot.editMessageText(text, {
-        chat_id: chatId,
-        message_id: messageId,
-        reply_markup: {
-          inline_keyboard: inlineKeyboard,
-        },
-      });
-      console.log('done confirmation');
-    } catch (err) {
-      console.log(err);
-    }
-  });
 }

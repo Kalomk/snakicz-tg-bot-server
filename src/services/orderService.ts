@@ -1,4 +1,4 @@
-import { OrderType } from '@/types';
+import { OrderType } from '../../types';
 import { prisma } from '../..';
 
 export const createOrderService = async ({

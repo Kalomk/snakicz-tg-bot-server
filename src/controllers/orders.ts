@@ -1,4 +1,4 @@
-import { ControllerFunctionType } from '@/types';
+import { ControllerFunctionType } from '../../types';
 import { prisma } from '../..';
 import { createOrderService, getLastDataService } from '../services/orderService';
 
