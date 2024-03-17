@@ -23,6 +23,15 @@ export const createOrderService = async ({
       ...orderData,
     },
   });
+
+  // Update the user's values
+  await prisma.user.update({
+    where: { uniqueId: user.uniqueId },
+    data: {
+      ordersCount: user.ordersCount + 1, // Increment ordersCount by 1
+      isFirstTimeBuy: false, // Set isFirstTimeBuy to false
+    },
+  });
   return newOrder;
 };
 

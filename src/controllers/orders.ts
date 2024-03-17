@@ -1,14 +1,67 @@
-import { ControllerFunctionType } from '../../types';
+import { ControllerFunctionType } from '../../type';
 import { prisma } from '../..';
 import { createOrderService, getLastDataService } from '../services/orderService';
 
-const getAllOrders: ControllerFunctionType = async (_, res) => {
+const getOrders: ControllerFunctionType = async (req, res) => {
   try {
-    const orders = await prisma.order.findMany();
+    const { page = 1, pageSize = '10' } = req.query;
+    const start = (parseInt(page as string) - 1) * parseInt(pageSize as string);
+
+    const paginatedData = await prisma.order.findMany({
+      skip: start,
+      take: parseInt(pageSize as string),
+    });
+
+    res.json(paginatedData);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+const getOrdersByDateRange: ControllerFunctionType = async (req, res) => {
+  const { startDate, endDate } = req.query;
+
+  if (!startDate || !endDate) {
+    return res
+      .status(400)
+      .json({ error: 'Both startDate and endDate are required in the query parameters.' });
+  }
+
+  try {
+    const orders = await prisma.order.findMany({
+      where: {
+        createdAt: {
+          gte: new Date(startDate as string),
+          lte: new Date(endDate as string),
+        },
+      },
+    });
+
     return res.json(orders);
   } catch (error) {
     console.error('Error fetching orders:', error);
-    throw error;
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+const getOrdersBySearchThemNames: ControllerFunctionType = async (req, res) => {
+  const { titles } = req.params;
+
+  try {
+    const userData = await prisma.order.findMany({
+      where: {
+        OR: [
+          { userName: { contains: titles, mode: 'insensitive' } },
+          { userLastName: { contains: titles, mode: 'insensitive' } },
+        ],
+      },
+    });
+
+    res.json(userData);
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
@@ -30,7 +83,7 @@ const updateUserOrderStatus: ControllerFunctionType = async (req, _) => {
 const orderDelete: ControllerFunctionType = async (req, res) => {
   try {
     const { orderNumber } = req.body;
-    const deletedOrder = prisma.order.delete({ where: { orderNumber } });
+    const deletedOrder = await prisma.order.delete({ where: { orderNumber } });
     return res.json(deletedOrder);
   } catch (e) {
     console.log(e);
@@ -44,6 +97,7 @@ const createOrder: ControllerFunctionType = async (req, res) => {
     // Find the user by uniqueId
     const { uniqueId, orderData } = req.body;
     const newOrder = createOrderService({ uniqueId, orderData });
+
     return res.json(newOrder);
   } catch (error) {
     console.error('Error creating order:', error);
@@ -79,8 +133,10 @@ const getOrdersByUserId: ControllerFunctionType = async (req, res) => {
 
 export const Orders = {
   getOrdersByUserId,
-  getAllOrders,
+  getOrders,
   orderDelete,
+  getOrdersBySearchThemNames,
+  getOrdersByDateRange,
   getLastAddedOrderForUser,
   createOrder,
   updateUserOrderStatus,

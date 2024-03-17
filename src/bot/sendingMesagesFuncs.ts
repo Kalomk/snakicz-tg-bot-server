@@ -1,7 +1,8 @@
 import TelegramBot from 'node-telegram-bot-api';
-import { group_chat, group_chat_for_payment } from '../..';
+import { group_chat_for_payment, _token, destinationUrl, prisma } from '../..';
 import { bot } from '../..';
 import { getLastDataService } from '../services/orderService';
+import { uploadAndDeleteFile } from '@/utils';
 
 interface SendingMessageTypes {
   chatId: number;
@@ -12,20 +13,20 @@ interface SendingMessageTypes {
 
 type SendingMessageTypeWithOrderNuymber = SendingMessageTypes & { orderNumber: string };
 
-export function SM_confrimOrder({ chatId, userId }: SendingMessageTypes) {
+export function SM_confrimOrder({ chatId }: Omit<SendingMessageTypes, 'userId'>) {
   const paymentButtons: TelegramBot.EditMessageTextOptions = {
     reply_markup: {
       inline_keyboard: [
         [
           {
             text: 'А-банк (курс 9)',
-            callback_data: JSON.stringify({ confirm: 'ukr-bank', chat_id: chatId }),
+            callback_data: JSON.stringify({ confirm: 'ukr-bank' }),
           },
         ],
         [
           {
             text: 'Переказ на польський рахунок',
-            callback_data: JSON.stringify({ confirm: 'polish_bank', chat_id: chatId }),
+            callback_data: JSON.stringify({ confirm: 'polish_bank' }),
           },
         ],
       ],
@@ -33,7 +34,7 @@ export function SM_confrimOrder({ chatId, userId }: SendingMessageTypes) {
   };
 
   bot.sendMessage(
-    userId,
+    chatId,
     'Ваше замовлення підтверджено ✅ \n \nБудь ласка, оберіть зручний для Вас спосіб оплати: ',
     paymentButtons
   );
@@ -79,6 +80,19 @@ export function SM_requestUserPhoto(chat_id: number) {
       try {
         // Send the photo to the group chat
 
+        const photoFile = await bot.getFile(photo.file_id);
+
+        //get pic url
+        const URL_PIC = `https://api.telegram.org/file/bot${_token}/${photoFile.file_path}`;
+        //send paymentConfirmation to order
+        const imgUrl = await uploadAndDeleteFile(URL_PIC, destinationUrl);
+
+        //update order payment pic url
+        await prisma.order.update({
+          where: { uniqueId: chat_id },
+          data: { paymentConfirmPicUrl: imgUrl },
+        });
+
         await bot.sendPhoto(group_chat_for_payment, photo.file_id);
         bot.sendMessage(group_chat_for_payment, `Скрін підтвердження №${orderNumber}`);
         bot.sendMessage(chatId, 'Фото підтвердження оплати відправлено 😍\nЧекайте на відправку');
@@ -94,7 +108,7 @@ export function SM_requestUserPhoto(chat_id: number) {
   });
 }
 
-export function SM_paymentConfirm({ userId }: SendingMessageTypes) {
+export function SM_paymentConfirm(userId: string) {
   bot.sendMessage(userId, 'Вашу оплату підтверджено✅\nБудь ласка, очікуйте номер відправлення 📦');
 }
 
@@ -107,7 +121,6 @@ export function SM_userDeclineOrder({
   bot: TelegramBot;
   chatId: number;
   group_id: string;
-  messageId_group: number;
   messageId: number;
   orderNumber: string;
 }) {
@@ -119,28 +132,39 @@ export function SM_userDeclineOrder({
   bot.sendMessage(group_id, `Замовлення ${orderNumber} відхилено`);
 }
 
-export function SM_userAcceptOrder(bot: TelegramBot, groupId: string, orderNumber: string) {
-  bot.sendMessage(groupId, `Замовлення ${orderNumber} продовжено`);
+export function SM_userAcceptOrder({
+  chatId,
+  group_id,
+  messageId,
+  orderNumber,
+}: {
+  bot: TelegramBot;
+  chatId: number;
+  group_id: string;
+  messageId: number;
+  orderNumber: string;
+}) {
+  bot.sendMessage(group_id, `Замовлення ${orderNumber} продовжено`);
+  bot.editMessageText('Ваше замовлення продовжено!', {
+    chat_id: chatId,
+    message_id: messageId,
+  });
 }
 
-export function SM_actualizeInfo({
-  messageId,
-  userId,
-  orderNumber,
-}: SendingMessageTypeWithOrderNuymber) {
+export function SM_actualizeInfo(userId: string, orderNumber: string) {
   const inlineKeyboardUser: TelegramBot.SendMessageOptions = {
     reply_markup: {
       inline_keyboard: [
         [
           {
             text: 'Так',
-            callback_data: JSON.stringify({ confirm: 'accept', message_id: messageId }),
+            callback_data: JSON.stringify({ confirm: 'accept' }),
           },
         ],
         [
           {
             text: 'Ні',
-            callback_data: JSON.stringify({ confirm: 'decline', message_id: messageId }),
+            callback_data: JSON.stringify({ confirm: 'decline' }),
           },
         ],
       ],
@@ -158,7 +182,7 @@ export function SM_sendOrderConfirmation({
   userId,
   orderNumber,
   messages,
-}: SendingMessageTypeWithOrderNuymber) {
+}: Omit<SendingMessageTypeWithOrderNuymber, 'chatId'>) {
   bot.sendMessage(
     userId,
     `Ваше замовлення № ${orderNumber} відправлено службою ${messages![0]} ,\n номер відправлення ${

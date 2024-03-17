@@ -3,14 +3,14 @@ import express from 'express';
 import * as dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 import cors from 'cors';
-import { useControllers } from './src/utils';
+import { useControllers } from './src/useController';
 import { startBot } from './src/bot';
 
 dotenv.config();
 
-// Constants
-const _token: string = process.env.TOKEN || '';
 //exported consts
+export const _token: string = process.env.TOKEN || '';
+export const destinationUrl: string = process.env.DESTINATION_FILE_URL || '';
 export const group_chat: string = process.env.GROUP_CHAT || '';
 export const group_chat_for_payment: string = process.env.GROUP_CHAT_FOR_PAYMENT || '';
 export const webAppUrl: string = process.env.WEB_URL || '';
@@ -18,9 +18,9 @@ export const webAppUrl: string = process.env.WEB_URL || '';
 // Create Express app
 const app: express.Application = express();
 export const prisma = new PrismaClient();
-
 // Middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use((_, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');

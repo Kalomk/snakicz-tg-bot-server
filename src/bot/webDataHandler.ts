@@ -1,7 +1,8 @@
+import { uploadFileToMediaServer } from '@/utils';
 import { group_chat, prisma, bot } from '../..';
-import { UT_sendKeyboardMessage } from '../utils';
-import { FormData, OrderType } from '../../types';
+import { FormData, OrderType, ActualPriceType } from '../../types';
 import { createOrderService } from '../services/orderService';
+import { checkEnableProductsService } from '@/services/productService';
 
 interface DataFromResponse {
   data?: OrderType;
@@ -17,12 +18,8 @@ interface DataFromResponse {
 }
 
 export async function webDataHandler(requestedData: FormData) {
-  const { chatId, userFromWeb, ...dataFromResponse } = requestedData;
+  const { chatId, userFromWeb, products, catPic, ...dataFromResponse } = requestedData;
 
-  // Find the user by chatId
-  const user = await prisma.user.findUnique({
-    where: { uniqueId: chatId.toString() },
-  });
   const sendMessages = async ({
     data,
     totalPrice,
@@ -49,6 +46,10 @@ export async function webDataHandler(requestedData: FormData) {
       );
     }, 2000);
   };
+  // Find the user by chatId
+  const user = await prisma.user.findUnique({
+    where: { uniqueId: chatId.toString() },
+  });
 
   if (user) {
     const userPhoneNumber = user?.phoneNumber;
@@ -57,7 +58,6 @@ export async function webDataHandler(requestedData: FormData) {
     try {
       const {
         data,
-        products,
         totalPrice,
         totalWeight,
         freeDelivery,
@@ -75,8 +75,21 @@ export async function webDataHandler(requestedData: FormData) {
       const userIndexCity = data?.userIndexCity;
       const userNickname = userFromWeb;
       const email = data!.email;
+      const actualPrice = activePrice as ActualPriceType;
 
-      createOrderService({
+      const { listOfElements, isNotExits } = await checkEnableProductsService(products);
+
+      if (isNotExits) {
+        for (const el of listOfElements) {
+          const message = `Пробачте,але ${el.title} вже закінчився,замовте щось інше`;
+          await bot.sendMessage(chatId, message);
+        }
+      }
+
+      //upload cat pic to server and get url
+      const imgUrl = catPic ? (await uploadFileToMediaServer(catPic.buffer)).imgUrl : '';
+
+      await createOrderService({
         uniqueId: chatId,
         orderData: {
           orderNumber: JSON.stringify(orderNumber),
@@ -91,8 +104,9 @@ export async function webDataHandler(requestedData: FormData) {
           userName: data!.userName,
           isCatExist,
           addressPack,
+          catExistConfirmPicUrl: imgUrl,
           freeDelivery,
-          activePrice,
+          activePrice: actualPrice,
           totalPrice: totalPrice!,
           email,
           price: calcTotalPrice,
@@ -101,16 +115,10 @@ export async function webDataHandler(requestedData: FormData) {
         },
       });
 
-      sendMessages({ data, activePrice, totalPrice, totalWeight, orderNumber });
+      const messageToGroup = `Нове замовлення ${orderNumber} через бот`;
 
-      // Update the user's values
-      await prisma.user.update({
-        where: { uniqueId: user.uniqueId },
-        data: {
-          ordersCount: user.ordersCount + 1, // Increment ordersCount by 1
-          isFirstTimeBuy: false, // Set isFirstTimeBuy to false
-        },
-      });
+      sendMessages({ data, activePrice, totalPrice, totalWeight, orderNumber });
+      await bot.sendMessage(group_chat, messageToGroup);
     } catch (e) {
       console.error('Error parsing data:', e);
     }

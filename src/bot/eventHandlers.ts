@@ -64,7 +64,6 @@ export async function EH_onCallbackQuery(
   const text = callbackQuery?.message?.text!;
   const chatId = callbackQuery?.message?.chat.id!;
   const messageId = callbackQuery?.message?.message_id!;
-  const messageIdGroup = action?.message_id!;
 
   let orderNumberFromText;
   const orderNumberMatch = text?.match(/Номер замовлення:\s+(\d+)/);
@@ -78,7 +77,7 @@ export async function EH_onCallbackQuery(
   }
 
   switch (action.confirm) {
-    case 'privat':
+    case 'ukr-bank':
       SM_sendPaymentMessage(chatId!, action.confirm);
       break;
     case 'polish_bank':
@@ -88,14 +87,19 @@ export async function EH_onCallbackQuery(
       SM_requestUserPhoto(chatId!);
       break;
     case 'accept':
-      SM_userAcceptOrder(bot, group_id, orderNumberFromText!);
+      SM_userAcceptOrder({
+        bot,
+        chatId,
+        group_id,
+        messageId,
+        orderNumber: orderNumberFromText!,
+      });
       break;
     case 'decline':
       SM_userDeclineOrder({
         bot,
         chatId,
         group_id,
-        messageId_group: messageIdGroup,
         messageId,
         orderNumber: orderNumberFromText!,
       });

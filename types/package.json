@@ -1,6 +1,6 @@
 {
   "name": "snakicz-types",
-  "version": "1.0.2",
+  "version": "1.0.10",
   "description": "snakicz-types",
   "main": "index.ts",
   "scripts": {
@@ -8,5 +8,9 @@
     "release": "npm version patch && npm publish"
   },
   "author": "Kalomk",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.6.8",
+    "form-data": "^4.0.0"
+  }
 }

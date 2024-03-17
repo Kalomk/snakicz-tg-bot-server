@@ -1,6 +1,6 @@
-import { Request, Response } from 'express';
+export type ActualPriceType = 'zł' | '€';
 
-export type ControllerFunctionType = (req: Request, res: Response) => Promise<any>;
+export type OrderComeFromType = 'telegram' | 'instagram' | 'tikTok' | 'fb' | 'web' | 'telegram_bot';
 
 export interface OrderType {
   userName: string; // Им'я та Прізвище
@@ -15,13 +15,18 @@ export interface OrderType {
   orderNumber: string; // Номер замовлення
   freeDelivery: boolean; // Безкоштовна доставка
   totalPrice: number; // Сума замовлення
-  activePrice: string; // Активна валюта
+  activePrice: ActualPriceType; // Активна валюта
   phoneNumber: string; // Номер телефону для відправки
   contactPhoneNumber: string; // Номер телефону для контакту
   email: string; // Емейл
   totalWeight: number; // Вага замовлення
   orderItems: string;
   price: number;
+
+  isStatisted?: boolean;
+
+  createdAt?: Date;
+  updatedAt?: Date;
 
   paymentConfirmPicUrl?: string;
   catExistConfirmPicUrl?: string;
@@ -31,7 +36,7 @@ export interface OrderType {
   op_isPacNumberSended?: boolean;
   op_isActualize?: boolean;
 
-  orderComeFrom?: 'telegram' | 'instagram' | 'tikTok' | 'fb' | 'web';
+  orderComeFrom?: OrderComeFromType;
 }
 
 export type UserOrderStatus =
@@ -41,29 +46,26 @@ export type UserOrderStatus =
   | 'isActualize';
 
 export interface ProductType {
-  id: number;
+  id?: number;
   title: string;
-  price: { [key: string]: number };
-  '€': { [key: string]: number };
+  price: { zł: { [key: string]: number }; '€': { [key: string]: number } };
   img: string;
   weight: number[];
   description?: string;
   totalWeightProduct: number;
   isEnable: boolean;
   category: number;
-  totalProductWeightFromProducts: { [id: number]: number };
+  totalProductWeightFromProducts: { [title: string]: number };
 }
 
 export interface UserDataTypes {
-  userName: string;
-  userLastName: string;
+  uniqueId: string;
   phoneNumber: string;
-  email: string;
-  userIndexCity: string;
-  addressPack?: string;
-  userCity: string;
-  userAddress?: string;
-  catPic: undefined | string;
+  isFirstTimeBuy: boolean;
+  ordersCount: number;
+
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export type CartItem = {
@@ -73,7 +75,7 @@ export type CartItem = {
   weight: number;
   id: string | string;
   count: number;
-  activePrice: 'zł' | '€';
+  activePrice: ActualPriceType;
   activeCountry: string;
 };
 
@@ -86,6 +88,7 @@ export interface FormData {
   rightShipPrice: number;
   isCatExist: boolean;
   freeDelivery: boolean;
+  catPic?: Express.Multer.File;
   products: CartItem[]; // Assuming OrderItem is another type/interface
   userFromWeb: string; // Assuming UserType is another type/interface
   chatId: string;
