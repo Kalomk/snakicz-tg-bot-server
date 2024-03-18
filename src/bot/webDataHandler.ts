@@ -68,8 +68,8 @@ export async function webDataHandler(requestedData: FormData) {
       } = dataFromResponse as unknown as DataFromResponse;
       const calcTotalPrice = +totalPrice + Number(rightShipPrice);
 
-      const addressPack = data!.addressPack || 'нема';
-      const userAddress = data!.userAddress || 'нема';
+      const addressPack = data!.addressPack || '';
+      const userAddress = data!.userAddress || '';
       const country = rightCurrentCountry;
       const userCity = data!.userCity;
       const userIndexCity = data?.userIndexCity;
