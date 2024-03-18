@@ -18,7 +18,8 @@ export const webAppUrl: string = process.env.WEB_URL || '';
 // Create Express app
 const app: express.Application = express();
 export const prisma = new PrismaClient();
-// Middleware
+
+// Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
