@@ -1,6 +1,6 @@
 import { createOrFindExistUserService } from '../services/userService';
 import { prisma } from '../..';
-import { ControllerFunctionType } from '../../types';
+import { ControllerFunctionType } from '../../type';
 
 const createOrFindExistUser: ControllerFunctionType = async (req, res) => {
   try {

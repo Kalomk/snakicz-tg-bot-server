@@ -1,4 +1,5 @@
-import { ProductType, ControllerFunctionType } from '../../types';
+import { ControllerFunctionType } from '../../type';
+import { ProductType } from 'types';
 import { prisma } from '../..';
 
 const createANewProduct: ControllerFunctionType = async (req, res) => {
