@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import express from 'express';
-import { removeExtension } from '@/utils';
+import { removeExtension } from '../utils';
 import multer from 'multer';
 
 const upload = multer();
