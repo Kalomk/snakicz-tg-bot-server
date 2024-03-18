@@ -19,7 +19,7 @@ export const createOrderService = async ({
   // Create a new order associated with the user
   const newOrder = await prisma.order.create({
     data: {
-      userId: user.uniqueId,
+      uniqueId: user.uniqueId,
       ...orderData,
     },
   });

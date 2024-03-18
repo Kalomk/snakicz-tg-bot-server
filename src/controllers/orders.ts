@@ -118,11 +118,11 @@ const getLastAddedOrderForUser: ControllerFunctionType = async (req, res) => {
 };
 
 // Get all orders for a specific user (by uniqueId)
-const getOrdersByUserId: ControllerFunctionType = async (req, res) => {
+const getOrdersByUniqueId: ControllerFunctionType = async (req, res) => {
   try {
     const { uniqueId } = req.body;
     const orders = await prisma.order.findMany({
-      where: { userId: uniqueId.toString() },
+      where: { uniqueId: uniqueId.toString() },
     });
     return res.json(orders);
   } catch (error) {
@@ -132,7 +132,7 @@ const getOrdersByUserId: ControllerFunctionType = async (req, res) => {
 };
 
 export const Orders = {
-  getOrdersByUserId,
+  getOrdersByUniqueId,
   getOrders,
   orderDelete,
   getOrdersBySearchThemNames,
