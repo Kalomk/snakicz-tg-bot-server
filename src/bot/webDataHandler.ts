@@ -1,8 +1,8 @@
-import { uploadFileToMediaServer } from '@/utils';
+import { uploadFileToMediaServer } from '../utils';
 import { group_chat, prisma, bot } from '../..';
 import { FormData, OrderType, ActualPriceType } from '../../types';
 import { createOrderService } from '../services/orderService';
-import { checkEnableProductsService } from '@/services/productService';
+import { checkEnableProductsService } from '../services/productService';
 
 interface DataFromResponse {
   data?: OrderType;

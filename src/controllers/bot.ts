@@ -1,11 +1,11 @@
 import { ControllerFunctionType } from '../../type';
-import { webDataHandler } from '@/bot/webDataHandler';
+import { webDataHandler } from '../bot/webDataHandler';
 import {
   SM_confrimOrder,
   SM_paymentConfirm,
   SM_actualizeInfo,
   SM_sendOrderConfirmation,
-} from '@/bot/sendingMesagesFuncs';
+} from '../bot/sendingMesagesFuncs';
 
 const webData: ControllerFunctionType = async (req, res) => {
   try {

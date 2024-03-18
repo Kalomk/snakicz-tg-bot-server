@@ -1,5 +1,4 @@
 import TelegramBot from 'node-telegram-bot-api';
-import { ControllerFunctionType } from '../type';
 import fs from 'fs';
 import axios from 'axios';
 // Helper function to send a message with a keyboard

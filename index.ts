@@ -3,8 +3,8 @@ import express from 'express';
 import * as dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 import cors from 'cors';
-import { useControllers } from './src/useController';
-import { startBot } from './src/bot';
+import { useControllers } from './src/useController/useController';
+import { startBot } from './src/bot/startBot';
 
 dotenv.config();
 

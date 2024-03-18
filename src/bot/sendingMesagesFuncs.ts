@@ -2,7 +2,7 @@ import TelegramBot from 'node-telegram-bot-api';
 import { group_chat_for_payment, _token, destinationUrl, prisma } from '../..';
 import { bot } from '../..';
 import { getLastDataService } from '../services/orderService';
-import { uploadAndDeleteFile } from '@/utils';
+import { uploadAndDeleteFile } from '../utils';
 
 interface SendingMessageTypes {
   chatId: number;
