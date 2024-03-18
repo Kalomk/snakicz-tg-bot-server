@@ -85,8 +85,8 @@ export function SM_requestUserPhoto(chat_id: number) {
         //get pic url
         const URL_PIC = `https://api.telegram.org/file/bot${_token}/${photoFile.file_path}`;
         //send paymentConfirmation to order
-        const imgUrl = await uploadAndDeleteFile(URL_PIC, destinationUrl);
-
+        const imgUrl = (await uploadAndDeleteFile(URL_PIC, destinationUrl)) ?? '';
+        console.log(imgUrl);
         //update order payment pic url
         await prisma.order.update({
           where: { uniqueId: chat_id },

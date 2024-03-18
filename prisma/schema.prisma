@@ -18,6 +18,10 @@ model User {
   phoneNumber    String
   isFirstTimeBuy Boolean      @default(true)
   ordersCount    Int @default(0)
+
+
+  //conditional password
+  password String @default("")
   
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -51,6 +55,7 @@ model Order {
 
   paymentConfirmPicUrl String   @default("")
   catExistConfirmPicUrl String   @default("")
+  specialOcasionAudioUrl String @default("")
 
 
 
@@ -67,8 +72,8 @@ model Order {
 
 
    // Define the opposite relation field
-  userId String
-  user    User @relation(fields: [userId], references: [uniqueId])
+  uniqueId String
+  user    User @relation(fields: [uniqueId], references: [uniqueId])
 }
 
 model Product {

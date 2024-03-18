@@ -30,6 +30,7 @@ export interface OrderType {
 
   paymentConfirmPicUrl?: string;
   catExistConfirmPicUrl?: string;
+  specialOcasionAudioUrl?: string;
 
   op_isConfirmationOrderSended?: boolean;
   op_isConfirmationPaymentSended?: boolean;
