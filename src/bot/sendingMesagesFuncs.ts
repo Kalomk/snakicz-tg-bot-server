@@ -89,7 +89,7 @@ export function SM_requestUserPhoto(chat_id: number) {
         console.log(imgUrl);
         //update order payment pic url
         await prisma.order.update({
-          where: { uniqueId: chat_id.toString() },
+          where: { orderNumber },
           data: { paymentConfirmPicUrl: imgUrl },
         });
 

@@ -45,7 +45,7 @@ export const getLastDataService = async (uniqueId: string) => {
   }
 
   const order = await prisma.order.findFirst({
-    where: { userId: user.uniqueId },
+    where: { uniqueId: user.uniqueId },
     orderBy: { createdAt: 'desc' } as any,
   });
 
