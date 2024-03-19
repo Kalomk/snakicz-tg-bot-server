@@ -7,6 +7,15 @@ import {
   SM_sendOrderConfirmation,
 } from '../bot/sendingMesagesFuncs';
 
+const webData: ControllerFunctionType = async (req, res) => {
+  try {
+    webDataHandler({ ...req.body, catPic: req.file });
+    return res.status(200);
+  } catch (e) {
+    console.log(e);
+  }
+};
+
 const confirmOrder: ControllerFunctionType = async (req, res) => {
   try {
     const { uniqueId } = req.body;
@@ -52,6 +61,7 @@ const sendOrderConfirmation: ControllerFunctionType = async (req, res) => {
 };
 
 export const Bot = {
+  webData,
   confirmOrder,
   sendOrderConfirmation,
   actualizeInfo,
