@@ -2,9 +2,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import express from 'express';
 import { removeExtension } from '../utils';
-import multer from 'multer';
-
-const upload = multer();
 
 export function useControllers(app: express.Application) {
   const controllers = fs
@@ -24,11 +21,7 @@ export function useControllers(app: express.Application) {
       const funcs = Object.keys(controllerModule[moduleObj]);
       funcs.forEach((func) => {
         const controlleName = removeExtension(controller);
-        app.use(
-          `/${controlleName}/${func}`,
-          upload.single('file'),
-          controllerModule[moduleObj][func]
-        );
+        app.use(`/${controlleName}/${func}`, controllerModule[moduleObj][func]);
       });
     });
   });

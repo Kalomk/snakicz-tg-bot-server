@@ -5,6 +5,9 @@ import { PrismaClient } from '@prisma/client';
 import cors from 'cors';
 import { useControllers } from './src/useController/useController';
 import { startBot } from './src/bot/startBot';
+import multer from 'multer';
+import { webDataHandler } from '@/bot/webDataHandler';
+const upload = multer();
 
 dotenv.config();
 
@@ -42,6 +45,15 @@ startBot();
 //routes
 useControllers(app);
 
+//bot send web data
+app.post('/webData', upload.single('file'), async (req, res) => {
+  try {
+    webDataHandler({ ...req.body, catPic: req.file });
+    return res.status(200);
+  } catch (e) {
+    console.log(e);
+  }
+});
 // Start the Express server
 
 const PORT = process.env.PORT || 8000;

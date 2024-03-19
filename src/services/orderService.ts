@@ -29,7 +29,7 @@ export const createOrderService = async ({
     where: { uniqueId: user.uniqueId },
     data: {
       ordersCount: user.ordersCount + 1, // Increment ordersCount by 1
-      isFirstTimeBuy: user.orderCount > 1 ? false : true, // Set isFirstTimeBuy to false
+      isFirstTimeBuy: user.ordersCount > 1 ? false : true, // Set isFirstTimeBuy to false
     },
   });
   return newOrder;
