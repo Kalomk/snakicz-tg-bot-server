@@ -5,12 +5,12 @@ import { createOrderService } from '../services/orderService';
 import { checkEnableProductsService } from '../services/productService';
 
 interface DataFromResponse {
-  data?: OrderType;
-  products: any[]; // Update this type based on your actual product data structure
-  totalPrice: number;
-  totalWeight: number;
-  freeDelivery: boolean;
-  isCatExist: boolean;
+  data?: string;
+  products: string; // Update this type based on your actual product data structure
+  totalPrice: string;
+  totalWeight: string;
+  freeDelivery: string;
+  isCatExist: string;
   activePrice: string;
   rightShipPrice: string;
   rightCurrentCountry: string;
@@ -27,9 +27,10 @@ export async function webDataHandler(requestedData: FormData) {
     totalWeight,
     orderNumber,
   }: Partial<DataFromResponse>) => {
+    const parsedData = data as unknown as OrderType;
     const messagesToSend: any[] = [
-      (data?.addressPack && `Адреса пачкомату:${data?.addressPack}`) ||
-        (data?.userAddress && `Ваша адреса: ${data?.userAddress}`),
+      (parsedData.addressPack && `Адреса пачкомату:${parsedData.addressPack}`) ||
+        (parsedData.userAddress && `Ваша адреса: ${parsedData.userAddress}`),
       `Cума замовлення: ${totalPrice} ${activePrice}`,
       `Вага замовлення: ${totalWeight} грам`,
       `Номер замовлення: ${orderNumber}`,
@@ -68,16 +69,20 @@ export async function webDataHandler(requestedData: FormData) {
       } = dataFromResponse as unknown as DataFromResponse;
       const calcTotalPrice = +totalPrice + Number(rightShipPrice);
 
-      const addressPack = data!.addressPack || '';
-      const userAddress = data!.userAddress || '';
+      //parse data
+
+      const parsedData = JSON.parse(data!);
+
+      const addressPack = parsedData.addressPack || '';
+      const userAddress = parsedData.userAddress || '';
       const country = rightCurrentCountry;
-      const userCity = data!.userCity;
-      const userIndexCity = data?.userIndexCity;
+      const userCity = parsedData.userCity;
+      const userIndexCity = parsedData.userIndexCity;
       const userNickname = userFromWeb;
-      const email = data!.email;
+      const email = parsedData.email;
       const actualPrice = activePrice as ActualPriceType;
 
-      const { listOfElements, isNotExits } = await checkEnableProductsService(products);
+      const { listOfElements, isNotExits } = await checkEnableProductsService(JSON.parse(products));
 
       if (isNotExits) {
         for (const el of listOfElements) {
@@ -94,30 +99,31 @@ export async function webDataHandler(requestedData: FormData) {
         orderData: {
           orderNumber: JSON.stringify(orderNumber),
           contactPhoneNumber: userPhoneNumber,
-          phoneNumber: data!.phoneNumber,
+          phoneNumber: parsedData.phoneNumber,
           userNickname,
           userAddress,
           userCountry: country,
           userCity,
           userIndexCity: userIndexCity!,
-          userLastName: data!.userLastName,
-          userName: data!.userName,
-          isCatExist,
+          userLastName: parsedData.userLastName,
+          userName: parsedData.userName,
+          isCatExist: isCatExist === 'true' ? true : false,
           addressPack,
+          orderComeFrom: 'telegram_bot',
           catExistConfirmPicUrl: imgUrl,
-          freeDelivery,
+          freeDelivery: freeDelivery === 'true' ? true : false,
           activePrice: actualPrice,
-          totalPrice: totalPrice!,
+          totalPrice: Number(totalPrice!),
           email,
           price: calcTotalPrice,
-          totalWeight: totalWeight!,
+          totalWeight: Number(totalWeight!),
           orderItems: JSON.stringify(products),
         },
       });
 
       const messageToGroup = `Нове замовлення ${orderNumber} через бот`;
 
-      sendMessages({ data, activePrice, totalPrice, totalWeight, orderNumber });
+      sendMessages({ data: parsedData, activePrice, totalPrice, totalWeight, orderNumber });
       await bot.sendMessage(group_chat, messageToGroup);
     } catch (e) {
       console.error('Error parsing data:', e);
