@@ -1,6 +1,5 @@
 import { OrderType } from '../../types';
 import { prisma } from '../..';
-import { ControllerFunctionType } from 'type';
 
 export const createOrderService = async ({
   uniqueId,

@@ -1,7 +1,7 @@
 import { ControllerFunctionType } from '../../type';
 import { ProductType } from 'types';
 import { prisma } from '../..';
-import { changeQuantityOfProductsService } from '@/services/productService';
+import { changeQuantityOfProductsService } from '../services/productService';
 
 const createANewProduct: ControllerFunctionType = async (req, res) => {
   try {
