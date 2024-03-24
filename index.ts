@@ -5,7 +5,7 @@ import { PrismaClient } from '@prisma/client';
 import cors from 'cors';
 import { useControllers } from './src/useController/useController';
 import { startBot } from './src/bot/startBot';
-import { useAuth } from '@/auth/auth';
+import { useAuth } from './src/auth/auth';
 
 dotenv.config();
 
