@@ -1,6 +1,10 @@
 import { ControllerFunctionType } from '../../type';
 import { prisma } from '../..';
-import { createOrderService, getLastDataService } from '../services/orderService';
+import {
+  createOrderService,
+  getLastDataService,
+  getOrderCountsByTypeService,
+} from '../services/orderService';
 
 const getOrders: ControllerFunctionType = async (req, res) => {
   try {
@@ -101,7 +105,6 @@ const orderDelete: ControllerFunctionType = async (req, res) => {
 // Controller function to create a new order associated with a user
 const createOrder: ControllerFunctionType = async (req, res) => {
   try {
-    // Find the user by uniqueId
     const { uniqueId, orderData } = req.body;
     const newOrder = createOrderService({ uniqueId, orderData });
 
@@ -112,6 +115,16 @@ const createOrder: ControllerFunctionType = async (req, res) => {
   }
 };
 
+const getOrderCountsByType: ControllerFunctionType = async (_, res) => {
+  try {
+    // Find the orders by order comes frome
+    const orderCount = getOrderCountsByTypeService();
+    return res.json(orderCount);
+  } catch (error) {
+    console.error('Error find orders:', error);
+    throw error;
+  }
+};
 // Get the last added order for a specific user
 const getLastAddedOrderForUser: ControllerFunctionType = async (req, res) => {
   try {
@@ -144,6 +157,7 @@ export const Orders = {
   orderDelete,
   getOrdersBySearchThemNames,
   getOrdersByDateRange,
+  getOrderCountsByType,
   getLastAddedOrderForUser,
   createOrder,
   updateUserOrderStatus,

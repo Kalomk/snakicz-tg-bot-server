@@ -5,7 +5,7 @@ import express, { NextFunction, Request, Response } from 'express';
 import * as bcrypt from 'bcrypt';
 
 interface DecodedToken {
-  uniqueId: string;
+  userId: string;
 }
 
 const getSensitiveData: ControllerFunctionType = async (req, res) => {
@@ -87,7 +87,7 @@ function verifyToken(req: Request, res: Response, next: NextFunction) {
     const decoded: any = jwt.verify(token, secretKey);
     if (typeof decoded === 'object' && 'uniqueId' in decoded) {
       const decodedToken = decoded as DecodedToken;
-      (req as any).uniqueId = decodedToken.uniqueId;
+      (req as any).userId = decodedToken.userId;
       next();
     } else {
       throw new Error('Invalid token');

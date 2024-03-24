@@ -14,10 +14,10 @@ export const checkEnableProductsService = async (cartItem: CartItem[]) => {
 
 export const changeQuantityOfProductsService = async (products: ProductType[]) => {
   const transaction = await prisma.$transaction(
-    products.map(({ id, totalWeightProduct }) =>
+    products.map(({ id, totalWeightProduct, totalBuyCount }) =>
       prisma.product.update({
         where: { id },
-        data: { totalWeightProduct },
+        data: { totalWeightProduct, totalBuyCount },
       })
     )
   );

@@ -37,6 +37,8 @@ export interface OrderType {
   op_isPacNumberSended?: boolean;
   op_isActualize?: boolean;
 
+  postSendNumber?: string;
+
   orderComeFrom?: OrderComeFromType;
 }
 
@@ -57,6 +59,9 @@ export interface ProductType {
   isEnable: boolean;
   category: number;
   totalProductWeightFromProducts: { [title: string]: number };
+
+  saleStatus?: string;
+  totalBuyCount: number;
 }
 
 export interface UserDataTypes {

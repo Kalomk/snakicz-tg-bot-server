@@ -4,8 +4,8 @@ import { ControllerFunctionType } from '../../type';
 
 const createOrFindExistUser: ControllerFunctionType = async (req, res) => {
   try {
-    const { uniqueId, phoneNumber } = req.body;
-    const user = await createOrFindExistUserService({ uniqueId, phoneNumber });
+    const { uniqueId, phoneNumber, status = 'user' } = req.body;
+    const user = await createOrFindExistUserService({ uniqueId, phoneNumber, status });
     return res.json(user);
   } catch (e) {
     console.log(e);

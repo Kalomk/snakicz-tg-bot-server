@@ -1,5 +1,6 @@
 import { OrderType } from '../../types';
 import { prisma } from '../..';
+import { ControllerFunctionType } from 'type';
 
 export const createOrderService = async ({
   uniqueId,
@@ -50,4 +51,17 @@ export const getLastDataService = async (uniqueId: string) => {
   });
 
   return order;
+};
+
+export const getOrderCountsByTypeService = async () => {
+  try {
+    const orderCounts = await prisma.order.groupBy({
+      by: ['orderComeFrom'],
+      _count: true,
+    });
+
+    return orderCounts;
+  } catch (error) {
+    console.error('Error fetching order counts:', error);
+  }
 };

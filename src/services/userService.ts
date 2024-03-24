@@ -3,9 +3,11 @@ import { prisma } from '../..';
 export const createOrFindExistUserService = async ({
   uniqueId,
   phoneNumber,
+  status = 'user',
 }: {
   uniqueId: string;
   phoneNumber: string;
+  status?: string;
 }): Promise<
   | {
       id: number;
@@ -31,6 +33,7 @@ export const createOrFindExistUserService = async ({
       data: {
         uniqueId: uniqueId.toString(),
         phoneNumber,
+        status,
       },
     });
   } catch (e) {
