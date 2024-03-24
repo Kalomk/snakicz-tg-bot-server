@@ -2,6 +2,7 @@ import TelegramBot from 'node-telegram-bot-api';
 import { webAppUrl } from '../..';
 import { bot } from '../..';
 import {
+  SM_requestUserAudio,
   SM_requestUserPhoto,
   SM_sendPaymentMessage,
   SM_userAcceptOrder,
@@ -29,14 +30,17 @@ export async function EH_contactHandler(msg: TelegramBot.Message) {
   const chatId = msg.chat.id;
   // Generate a random number between 1000 and 9999
   const phoneNumber = msg?.contact?.phone_number!;
+  const updatedKeyboard = [['Почати знову']];
 
   await createOrFindExistUserService({ uniqueId: chatId.toString(), phoneNumber }).then((user) => {
-    const isFirstTimeBuy = user?.isFirstTimeBuy;
+    const isFirstTimeBuy = user && user.ordersCount > 0;
 
     const webUrl = isFirstTimeBuy ? webAppUrl + '/priceSelect' : webAppUrl;
     const thankYouMessage = "Дякуємо за контакти. Для продовження натисніть 'Магазин'";
+    const repeatMessage = "Щоб вислати номер ще раз,натисніть 'Почати знову'";
 
-    // UT_sendKeyboardMessage(bot, chatId, thankYouMessage, storeKeyboard);
+    UT_sendKeyboardMessage(bot, chatId, repeatMessage, updatedKeyboard);
+
     if (isFirstTimeBuy) {
       bot.sendMessage(chatId, thankYouMessage, {
         reply_markup: {
@@ -44,7 +48,7 @@ export async function EH_contactHandler(msg: TelegramBot.Message) {
         },
       });
     } else {
-      bot.sendMessage(chatId, 'Чи бажаєте повторити замовлення?', {
+      bot.sendMessage(chatId, 'Чи бажаєте повторити попереднє замовлення?', {
         reply_markup: {
           inline_keyboard: [
             [{ text: 'Ні', web_app: { url: webUrl } }],
@@ -86,6 +90,8 @@ export async function EH_onCallbackQuery(
     case 'sendPhoto':
       SM_requestUserPhoto(chatId!);
       break;
+    case 'sendAudio':
+      SM_requestUserAudio(chatId);
     case 'accept':
       SM_userAcceptOrder({
         bot,

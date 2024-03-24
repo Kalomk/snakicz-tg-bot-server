@@ -1,6 +1,7 @@
 import { ControllerFunctionType } from '../../type';
 import { ProductType } from 'types';
 import { prisma } from '../..';
+import { changeQuantityOfProductsService } from '@/services/productService';
 
 const createANewProduct: ControllerFunctionType = async (req, res) => {
   try {
@@ -50,17 +51,8 @@ const deleteProduct: ControllerFunctionType = async (req, res) => {
 
 const changeQuantityOfProduct: ControllerFunctionType = async (req, res) => {
   try {
-    const productsFromReq: ProductType[] = req.body.products;
-    const transaction = await prisma.$transaction(
-      productsFromReq.map(({ id, totalWeightProduct }) =>
-        prisma.product.update({
-          where: { id },
-          data: { totalWeightProduct },
-        })
-      )
-    );
-
-    return res.json(transaction);
+    const updatedProducts = await changeQuantityOfProductsService(req.body);
+    return res.json(updatedProducts);
   } catch (e) {
     console.log(e);
   }

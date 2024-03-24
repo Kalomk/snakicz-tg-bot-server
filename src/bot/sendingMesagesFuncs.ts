@@ -1,5 +1,11 @@
 import TelegramBot from 'node-telegram-bot-api';
-import { group_chat_for_payment, _token, destinationUrl, prisma } from '../..';
+import {
+  group_chat_for_payment,
+  _token,
+  destinationUrl_Img,
+  prisma,
+  destinationUrl_audio,
+} from '../..';
 import { bot } from '../..';
 import { getLastDataService } from '../services/orderService';
 import { uploadAndDeleteFile } from '../utils';
@@ -85,7 +91,7 @@ export function SM_requestUserPhoto(chat_id: number) {
         //get pic url
         const URL_PIC = `https://api.telegram.org/file/bot${_token}/${photoFile.file_path}`;
         //send paymentConfirmation to order
-        const imgUrl = (await uploadAndDeleteFile(URL_PIC, destinationUrl)) ?? '';
+        const imgUrl = (await uploadAndDeleteFile(URL_PIC, destinationUrl_Img, 'image/jpeg')) ?? '';
         console.log(imgUrl);
         //update order payment pic url
         await prisma.order.update({
@@ -104,6 +110,43 @@ export function SM_requestUserPhoto(chat_id: number) {
     } else {
       bot.sendMessage(chatId, 'Повідомлення не містить фото підтвердження оплати');
       SM_requestUserPhoto(chatId);
+    }
+  });
+}
+
+export function SM_requestUserAudio(chat_id: number) {
+  bot.sendMessage(chat_id, 'Вишліть аудіозапис для привітання 👇');
+  // Listen for messages from the user
+  bot.once('audio', async (msg) => {
+    const chatId = msg.chat.id;
+    const orderNumber = await getLastDataService(chatId.toString()).then(
+      (order) => order?.orderNumber
+    );
+
+    if (msg.audio) {
+      const audio = msg.audio;
+      try {
+        const audioFile = await bot.getFile(audio.file_id);
+
+        //get audio url
+        const URL_AUDIO = `https://api.telegram.org/file/bot${_token}/${audioFile.file_path}`;
+        const audioUrl =
+          (await uploadAndDeleteFile(URL_AUDIO, destinationUrl_audio, 'audio/mp3')) ?? '';
+        //update order special ocassion url
+        await prisma.order.update({
+          where: { orderNumber },
+          data: { specialOcasionAudioUrl: audioUrl },
+        });
+
+        bot.sendMessage(chatId, `Ваш аудіозапис довжиною ${audio.duration} прийнято!`);
+      } catch (error) {
+        console.error('Error sending photo:', error);
+        bot.sendMessage(chatId, 'Під час відправлення аудіо сталася помилка 😳\nСпробуйте знову');
+        SM_requestUserAudio(chatId);
+      }
+    } else {
+      bot.sendMessage(chatId, 'Повідомлення не містить аудіозапису');
+      SM_requestUserAudio(chatId);
     }
   });
 }

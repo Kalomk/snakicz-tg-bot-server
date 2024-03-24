@@ -5,15 +5,18 @@ import { PrismaClient } from '@prisma/client';
 import cors from 'cors';
 import { useControllers } from './src/useController/useController';
 import { startBot } from './src/bot/startBot';
+import { useAuth } from '@/auth/auth';
 
 dotenv.config();
 
 //exported consts
 export const _token: string = process.env.TOKEN || '';
-export const destinationUrl: string = process.env.DESTINATION_FILE_URL || '';
+export const destinationUrl_Img: string = process.env.DESTINATION_FILE_URL_IMG || '';
+export const destinationUrl_audio: string = process.env.DESTINATION_FILE_URL_AUDIO || '';
 export const group_chat: string = process.env.GROUP_CHAT || '';
 export const group_chat_for_payment: string = process.env.GROUP_CHAT_FOR_PAYMENT || '';
 export const webAppUrl: string = process.env.WEB_URL || '';
+export const secretKey: string = process.env.SECRET_JWT || '';
 
 // Create Express app
 const app: express.Application = express();
@@ -41,6 +44,7 @@ startBot();
 
 //routes
 useControllers(app);
+useAuth(app);
 
 // Start the Express server
 

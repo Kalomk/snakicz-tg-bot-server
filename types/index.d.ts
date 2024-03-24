@@ -81,16 +81,17 @@ export type CartItem = {
 };
 
 export interface FormData {
-  data: UserDataTypes;
+  data: string;
+  products: string;
   totalPrice: string;
   totalWeight: string;
-  activePrice: string;
-  rightCurrentCountry: string;
-  rightShipPrice: number;
-  isCatExist: string;
   freeDelivery: string;
-  catPic?: Express.Multer.File;
-  products: string; // Assuming OrderItem is another type/interface
-  userFromWeb: string; // Assuming UserType is another type/interface
+  isCatExist: string;
+  activePrice: string;
+  rightShipPrice: string;
+  rightCurrentCountry: string;
+  orderNumber: string;
   chatId: string;
+  userFromWeb: string;
+  catPic: Express.Multer.File;
 }

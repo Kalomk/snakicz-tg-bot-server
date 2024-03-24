@@ -22,14 +22,14 @@ export function removeExtension(filename: string) {
   return filename.replace(/\.[^/.]+$/, '');
 }
 
-export const uploadFileToMediaServer = async (file: Buffer | undefined) => {
+export const uploadFileToMediaServer = async (file: Buffer | undefined, type: string) => {
   try {
     if (!file) {
       throw new Error('No file provided');
     }
 
     // Convert Buffer to Blob
-    const blob = new Blob([file], { type: 'image/jpeg' });
+    const blob = new Blob([file], { type });
 
     // Create FormData object and append file to it
     const formData = new FormData();
@@ -55,7 +55,7 @@ export const uploadFileToMediaServer = async (file: Buffer | undefined) => {
 
       // Send response
       return {
-        imgUrl: `https://snakicz-bot.net/cloud/store/uploads/den4ik/${uploadResponse.data.fileName}`,
+        url: `https://snakicz-bot.net/cloud/store/uploads/den4ik/${uploadResponse.data.fileName}`,
       };
     } catch (error) {
       console.log(error);
@@ -101,14 +101,14 @@ function deleteFile(filePath: string) {
   });
 }
 
-export async function uploadAndDeleteFile(fileUrl: string, destinationPath: string) {
+export async function uploadAndDeleteFile(fileUrl: string, destinationPath: string, type: string) {
   return downloadFile(fileUrl, destinationPath)
     .then(async () => {
       console.log('File downloaded successfully:', fileUrl);
       const fileContent = fs.readFileSync(destinationPath);
 
       // Call the function to process the downloaded file
-      return (await uploadFileToMediaServer(fileContent)).imgUrl;
+      return (await uploadFileToMediaServer(fileContent, type)).url;
     })
     .catch((error) => {
       console.error('Error downloading file:', error);

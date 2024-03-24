@@ -2,31 +2,22 @@ import { uploadFileToMediaServer } from '../utils';
 import { group_chat, prisma, bot } from '../..';
 import { FormData, OrderType, ActualPriceType } from '../../types';
 import { createOrderService } from '../services/orderService';
-import { checkEnableProductsService } from '../services/productService';
-
-interface DataFromResponse {
-  data?: string;
-  products: string; // Update this type based on your actual product data structure
-  totalPrice: string;
-  totalWeight: string;
-  freeDelivery: string;
-  isCatExist: string;
-  activePrice: string;
-  rightShipPrice: string;
-  rightCurrentCountry: string;
-  orderNumber?: string;
-}
+import {
+  changeQuantityOfProductsService,
+  checkEnableProductsService,
+} from '../services/productService';
 
 export async function webDataHandler(requestedData: FormData) {
   const { chatId, userFromWeb, products, catPic, ...dataFromResponse } = requestedData;
 
+  //send user messages
   const sendMessages = async ({
     data,
     totalPrice,
     activePrice,
     totalWeight,
     orderNumber,
-  }: Partial<DataFromResponse>) => {
+  }: Partial<FormData>) => {
     const parsedData = data as unknown as OrderType;
     const messagesToSend: any[] = [
       (parsedData.addressPack && `Адреса пачкомату:${parsedData.addressPack}`) ||
@@ -66,12 +57,13 @@ export async function webDataHandler(requestedData: FormData) {
         activePrice,
         rightShipPrice,
         rightCurrentCountry,
-      } = dataFromResponse as unknown as DataFromResponse;
+      } = dataFromResponse;
       const calcTotalPrice = +totalPrice + Number(rightShipPrice);
 
       //parse data
 
       const parsedData = JSON.parse(data!);
+      const parsedProducts = JSON.parse(products);
 
       const addressPack = parsedData.addressPack || '';
       const userAddress = parsedData.userAddress || '';
@@ -82,7 +74,9 @@ export async function webDataHandler(requestedData: FormData) {
       const email = parsedData.email;
       const actualPrice = activePrice as ActualPriceType;
 
-      const { listOfElements, isNotExits } = await checkEnableProductsService(JSON.parse(products));
+      //check if products quantity is zero
+
+      const { listOfElements, isNotExits } = await checkEnableProductsService(parsedProducts);
 
       if (isNotExits) {
         for (const el of listOfElements) {
@@ -91,13 +85,17 @@ export async function webDataHandler(requestedData: FormData) {
         }
       }
 
+      //update quantinty of products
+
+      await changeQuantityOfProductsService(parsedProducts);
+
       //upload cat pic to server and get url
-      const imgUrl = catPic ? (await uploadFileToMediaServer(catPic.buffer)).imgUrl : '';
+      const imgUrl = catPic ? (await uploadFileToMediaServer(catPic.buffer, 'image/jpeg')).url : '';
 
       await createOrderService({
         uniqueId: chatId,
         orderData: {
-          orderNumber: JSON.stringify(orderNumber),
+          orderNumber: orderNumber,
           contactPhoneNumber: userPhoneNumber,
           phoneNumber: parsedData.phoneNumber,
           userNickname,
@@ -117,7 +115,7 @@ export async function webDataHandler(requestedData: FormData) {
           email,
           price: calcTotalPrice,
           totalWeight: Number(totalWeight!),
-          orderItems: JSON.stringify(products),
+          orderItems: products,
         },
       });
 
@@ -125,6 +123,27 @@ export async function webDataHandler(requestedData: FormData) {
 
       sendMessages({ data: parsedData, activePrice, totalPrice, totalWeight, orderNumber });
       await bot.sendMessage(group_chat, messageToGroup);
+
+      //send user audio request
+
+      bot.sendMessage(chatId, 'Чи бажаєте додати аудіо привітання до замовлення?', {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: 'Ні',
+                callback_data: JSON.stringify({ confirm: 'sendAudio', chat_id: chatId }),
+              },
+            ],
+            [
+              {
+                text: 'Так',
+                callback_data: JSON.stringify({ confirm: 'sendAudio', chat_id: chatId }),
+              },
+            ],
+          ],
+        },
+      });
     } catch (e) {
       console.error('Error parsing data:', e);
     }

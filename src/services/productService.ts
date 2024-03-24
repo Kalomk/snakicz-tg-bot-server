@@ -1,4 +1,4 @@
-import { CartItem } from '../../types';
+import { CartItem, ProductType } from '../../types';
 import { prisma } from '../..';
 
 export const checkEnableProductsService = async (cartItem: CartItem[]) => {
@@ -10,4 +10,17 @@ export const checkEnableProductsService = async (cartItem: CartItem[]) => {
     isNotExits: disabledProducts.length > 0,
     listOfElements: disabledProducts,
   };
+};
+
+export const changeQuantityOfProductsService = async (products: ProductType[]) => {
+  const transaction = await prisma.$transaction(
+    products.map(({ id, totalWeightProduct }) =>
+      prisma.product.update({
+        where: { id },
+        data: { totalWeightProduct },
+      })
+    )
+  );
+
+  return transaction;
 };
