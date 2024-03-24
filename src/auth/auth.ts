@@ -1,4 +1,4 @@
-import { prisma, secretKey } from 'index';
+import { prisma, secretKey, sex } from 'index';
 import { ControllerFunctionType } from 'type';
 import jwt, { VerifyErrors } from 'jsonwebtoken';
 import express, { NextFunction, Request, Response } from 'express';
@@ -48,9 +48,12 @@ const login: ControllerFunctionType = async (req, res) => {
 };
 
 const register: ControllerFunctionType = async (req, res) => {
-  const { uniqueId, password, phoneNumber } = req.body;
+  const { uniqueId, password, phoneNumber, secretKey } = req.body;
 
   // Find user by username and password (you might use a database query here)
+
+  const secretSex = sex === secretKey ? 'admin' : 'user';
+
   const existingUser = await prisma.user.findUnique({
     where: {
       uniqueId: uniqueId.toString(),
@@ -69,6 +72,7 @@ const register: ControllerFunctionType = async (req, res) => {
         uniqueId: uniqueId.toString(),
         password: hash,
         phoneNumber,
+        status: secretSex,
       },
     });
     const token = jwt.sign({ uniqueId: userData.uniqueId }, secretKey, { expiresIn: '1h' });

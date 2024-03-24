@@ -17,7 +17,7 @@ export const group_chat: string = process.env.GROUP_CHAT || '';
 export const group_chat_for_payment: string = process.env.GROUP_CHAT_FOR_PAYMENT || '';
 export const webAppUrl: string = process.env.WEB_URL || '';
 export const secretKey: string = process.env.SECRET_JWT || '';
-
+export const sex: string = process.env.SECRET_SEX || '';
 // Create Express app
 const app: express.Application = express();
 export const prisma = new PrismaClient();
