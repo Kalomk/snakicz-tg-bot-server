@@ -1,4 +1,4 @@
-import { prisma, secretKey, sex } from 'index';
+import { prisma, secretKey, sex } from '../..';
 import { ControllerFunctionType } from 'type';
 import jwt, { VerifyErrors } from 'jsonwebtoken';
 import express, { NextFunction, Request, Response } from 'express';
