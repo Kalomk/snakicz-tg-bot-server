@@ -22,7 +22,7 @@ const getUsers: ControllerFunctionType = async (req, res) => {
     // Fetch total count of orders
     const totalCount = await prisma.user.count();
 
-    if (start - totalCount <= 0 && parsedPageCount > 1) {
+    if (totalCount - start <= 0 && parsedPageCount > 1) {
       return res.json([]);
     }
 
