@@ -14,6 +14,7 @@ const createANewProduct: ControllerFunctionType = async (req, res) => {
     return res.json(newAddedProduct);
   } catch (e) {
     console.log(e);
+    res.status(500).json({ message: 'huynia' });
   }
 };
 

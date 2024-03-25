@@ -9,12 +9,20 @@ import {
 const getOrders: ControllerFunctionType = async (req, res) => {
   try {
     const { page = 1, pageSize = '10' } = req.query;
-    const start = (parseInt(page as string) - 1) * parseInt(pageSize as string);
+
+    const parsedPageCount = parseInt(page as string);
+    const parsedPageSize = parseInt(pageSize as string);
+
+    const start = parsedPageCount * parsedPageSize;
     // Fetch total count of orders
     const totalCount = await prisma.order.count();
 
+    if (start - totalCount <= 0 && parsedPageCount > 1) {
+      return res.json([]);
+    }
+
     // Calculate the skip value to get the latest data
-    const skip = Math.max(totalCount - start - parseInt(pageSize as string), 0);
+    const skip = totalCount - start;
 
     // Fetch paginated data
     const paginatedData = await prisma.order.findMany({
