@@ -22,7 +22,7 @@ const getOrders: ControllerFunctionType = async (req, res) => {
     }
 
     // Calculate the skip value to get the latest data
-    const skip = totalCount - start;
+    const skip = Math.max(totalCount - start, 0);
 
     // Fetch paginated data
     const paginatedData = await prisma.order.findMany({
