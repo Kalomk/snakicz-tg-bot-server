@@ -87,7 +87,7 @@ export async function webDataHandler(requestedData: FormData) {
 
       //update quantinty of products
 
-      await changeQuantityOfProductsService(parsedProducts);
+      // await changeQuantityOfProductsService(parsedProducts);
 
       //upload cat pic to server and get url
       const imgUrl = catPic ? (await uploadFileToMediaServer(catPic.buffer, 'image/jpeg')).url : '';
