@@ -33,7 +33,7 @@ export async function EH_contactHandler(msg: TelegramBot.Message) {
   const updatedKeyboard = [['Почати знову']];
 
   await createOrFindExistUserService({ uniqueId: chatId.toString(), phoneNumber }).then((user) => {
-    const isFirstTimeBuy = user && user.ordersCount > 0;
+    const isFirstTimeBuy = user && user.ordersCount > 1;
 
     const webUrl = isFirstTimeBuy ? webAppUrl + '/priceSelect' : webAppUrl;
     const thankYouMessage = "Дякуємо за контакти. Для продовження натисніть 'Магазин'";
