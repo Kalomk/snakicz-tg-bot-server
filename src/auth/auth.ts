@@ -3,7 +3,7 @@ import { ControllerFunctionType } from 'type';
 import jwt, { VerifyErrors } from 'jsonwebtoken';
 import express, { NextFunction, Request, Response } from 'express';
 import * as bcrypt from 'bcrypt';
-import { createOrFindExistUserService } from '@/services/userService';
+import { createOrFindExistUserService } from '../services/userService';
 
 interface DecodedToken {
   uniqueId: string;
