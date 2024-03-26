@@ -3,17 +3,35 @@ import { ControllerFunctionType } from 'type';
 import jwt, { VerifyErrors } from 'jsonwebtoken';
 import express, { NextFunction, Request, Response } from 'express';
 import * as bcrypt from 'bcrypt';
+import { createOrFindExistUserService } from '@/services/userService';
 
 interface DecodedToken {
-  userId: string;
+  uniqueId: string;
+  secretSex: string;
 }
 
-const getSensitiveData: ControllerFunctionType = async (req, res) => {
+const getSensitiveDataByUser: ControllerFunctionType = async (req, res) => {
   // If token verification is successful, return protected data
   try {
     const user = await prisma.user.findUnique({
       where: {
-        uniqueId: req.body.uniqueId.toString(),
+        uniqueId: (req as any).uniqueId.toString(),
+      },
+    });
+    return res.status(200).json(user);
+  } catch (e) {
+    console.log(e);
+  }
+};
+const getSensitiveDataByAdmin: ControllerFunctionType = async (req, res) => {
+  if ((req as any).status !== 'admin') {
+    res.status(500).json({ message: 'Not admin!!!' });
+  }
+  // If token verification is successful, return protected data
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        uniqueId: (req as any).uniqueId.toString(),
       },
     });
     return res.status(200).json(user);
@@ -67,15 +85,15 @@ const register: ControllerFunctionType = async (req, res) => {
   const hash = await bcrypt.hash(password, saltAndRound);
 
   try {
-    const userData = await prisma.user.create({
-      data: {
-        uniqueId: uniqueId.toString(),
-        password: hash,
-        phoneNumber,
-        status: secretSex,
-      },
+    const userData = await createOrFindExistUserService({
+      uniqueId,
+      phoneNumber,
+      status: secretSex,
+      password: hash,
     });
-    const token = jwt.sign({ uniqueId: userData.uniqueId }, secretKey, { expiresIn: '1h' });
+    const token = jwt.sign({ uniqueId: userData.uniqueId, secretSex }, secretKey, {
+      expiresIn: '1h',
+    });
 
     res.status(201).json({ message: 'User registered successfully', token });
   } catch (err) {
@@ -91,7 +109,9 @@ function verifyToken(req: Request, res: Response, next: NextFunction) {
     const decoded: any = jwt.verify(token, secretKey);
     if (typeof decoded === 'object' && 'uniqueId' in decoded) {
       const decodedToken = decoded as DecodedToken;
-      (req as any).userId = decodedToken.userId;
+      (req as any).uniqueId = decodedToken.uniqueId;
+      (req as any).status = decodedToken.secretSex;
+
       next();
     } else {
       throw new Error('Invalid token');
@@ -109,5 +129,6 @@ export const useAuth = (app: express.Application) => {
   app.post('/register', register);
 
   // Protected route
-  app.get('/getMe', verifyToken, getSensitiveData);
+  app.get('/getMe', verifyToken, getSensitiveDataByUser);
+  app.get('/getMeAdmin', verifyToken, getSensitiveDataByAdmin);
 };

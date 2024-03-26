@@ -18,21 +18,19 @@ const getUsers: ControllerFunctionType = async (req, res) => {
     const parsedPageCount = parseInt(page as string);
     const parsedPageSize = parseInt(pageSize as string);
 
-    const start = parsedPageCount * parsedPageSize;
+    const start = (parsedPageCount - 1) * parsedPageSize;
     // Fetch total count of orders
     const totalCount = await prisma.user.count();
 
-    if (totalCount - start <= 0 && parsedPageCount > 1) {
-      return res.json([]);
-    }
+    // Calculate the leftovers data size
+    const leftoverDataSize = Math.max(totalCount - start, 0);
 
-    // Calculate the skip value to get the latest data
-    const skip = Math.max(totalCount - start, 0);
-
+    const skip = Math.max(leftoverDataSize - parsedPageSize, 0);
+    const take = leftoverDataSize >= parsedPageSize ? parsedPageSize : leftoverDataSize;
     // Fetch paginated data
     const paginatedData = await prisma.user.findMany({
       skip,
-      take: parseInt(pageSize as string),
+      take,
       orderBy: { createdAt: 'desc' }, // Assuming 'createdAt' is the timestamp column
     });
 

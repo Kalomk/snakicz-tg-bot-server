@@ -1,25 +1,17 @@
+import { UserDataTypes } from 'types';
 import { prisma } from '../..';
 
 export const createOrFindExistUserService = async ({
   uniqueId,
   phoneNumber,
   status = 'user',
+  password = '',
 }: {
   uniqueId: string;
   phoneNumber: string;
   status?: string;
-}): Promise<
-  | {
-      id: number;
-      uniqueId: string;
-      phoneNumber: string;
-      isFirstTimeBuy: boolean;
-      ordersCount: number;
-      createdAt: Date;
-      updatedAt: Date;
-    }
-  | undefined
-> => {
+  password?: string;
+}): Promise<UserDataTypes> => {
   try {
     const user = await prisma.user.findUnique({
       where: {
@@ -33,10 +25,12 @@ export const createOrFindExistUserService = async ({
       data: {
         uniqueId: uniqueId.toString(),
         phoneNumber,
+        password,
         status,
       },
     });
   } catch (e) {
     console.log(e);
+    return [] as unknown as UserDataTypes;
   }
 };

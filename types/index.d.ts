@@ -40,6 +40,8 @@ export interface OrderType {
   postSendNumber?: string;
 
   orderComeFrom?: OrderComeFromType;
+
+  uniqueId?: string;
 }
 
 export type UserOrderStatus =

@@ -122,11 +122,10 @@ export async function webDataHandler(requestedData: FormData) {
       const messageToGroup = `Нове замовлення ${orderNumber} через бот`;
 
       sendMessages({ data: parsedData, activePrice, totalPrice, totalWeight, orderNumber });
-      await bot.sendMessage(group_chat, messageToGroup);
 
       //send user audio request
 
-      bot.sendMessage(chatId, 'Чи бажаєте додати аудіо привітання до замовлення?', {
+      await bot.sendMessage(chatId, 'Чи бажаєте додати аудіо привітання до замовлення?', {
         reply_markup: {
           inline_keyboard: [
             [
@@ -144,6 +143,8 @@ export async function webDataHandler(requestedData: FormData) {
           ],
         },
       });
+
+      await bot.sendMessage(group_chat, messageToGroup);
     } catch (e) {
       console.error('Error parsing data:', e);
     }

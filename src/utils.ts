@@ -1,6 +1,7 @@
 import TelegramBot from 'node-telegram-bot-api';
 import fs from 'fs';
 import axios from 'axios';
+import path from 'path';
 // Helper function to send a message with a keyboard
 export function UT_sendKeyboardMessage(
   bot: TelegramBot,
@@ -67,24 +68,22 @@ export const uploadFileToMediaServer = async (file: Buffer | undefined, type: st
   }
 };
 
-async function downloadFile(url: string, destination: string) {
+async function downloadFile(url: string, path: string) {
   const response = await axios({
     method: 'GET',
     url: url,
-    responseType: 'arraybuffer', // set responseType to arraybuffer
+    responseType: 'stream', // set responseType to stream
   });
 
-  const buffer = Buffer.from(response.data); // Convert response data to Buffer
-
-  // Write the Buffer to the destination file
-  fs.writeFileSync(destination, buffer);
+  const writer = fs.createWriteStream(path);
+  response.data.pipe(writer);
 
   return new Promise((resolve, reject) => {
-    response.data.on('end', (data: any) => {
-      resolve(data);
+    writer.on('finish', () => {
+      resolve(path); // Resolve with the full destination path
     });
 
-    response.data.on('error', (err: any) => {
+    writer.on('error', (err: any) => {
       reject(err);
     });
   });
@@ -102,10 +101,21 @@ function deleteFile(filePath: string) {
 }
 
 export async function uploadAndDeleteFile(fileUrl: string, destinationPath: string, type: string) {
-  return downloadFile(fileUrl, destinationPath)
+  const folderPath = path.resolve(__dirname, '../../temp');
+
+  // Check if the directory exists
+  if (!fs.existsSync(folderPath)) {
+    // If it doesn't exist, create the directory
+    fs.mkdirSync(folderPath, { recursive: true });
+  }
+
+  // Create the full destination path by combining folderPath and destination
+  const fullDestination = path.join(folderPath, destinationPath);
+
+  return downloadFile(fileUrl, fullDestination)
     .then(async () => {
       console.log('File downloaded successfully:', fileUrl);
-      const fileContent = fs.readFileSync(destinationPath);
+      const fileContent = fs.readFileSync(fullDestination);
 
       // Call the function to process the downloaded file
       return (await uploadFileToMediaServer(fileContent, type)).url;
@@ -115,6 +125,6 @@ export async function uploadAndDeleteFile(fileUrl: string, destinationPath: stri
     })
     .finally(() => {
       // Delete the file after processing
-      deleteFile(fileUrl);
+      deleteFile(fullDestination);
     });
 }
